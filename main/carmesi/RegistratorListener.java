@@ -3,14 +3,12 @@
  * and open the template in the editor.
  */
 
-package umbrella;
+package carmesi;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.EnumSet;
-import java.util.Map;
-import java.util.Set;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
@@ -26,7 +24,7 @@ import javax.servlet.annotation.WebListener;
  * @author Victor
  */
 @WebListener
-public class UmbrellaListener implements ServletContextListener{
+public class RegistratorListener implements ServletContextListener{
     private ServletContext context;
     private UmbrellaServlet umbrellaServlet;
     private Dynamic dymanicServlet;
