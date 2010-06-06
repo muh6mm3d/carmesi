@@ -1,15 +1,19 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
 
 package carmesi;
 
 /**
- * Indicates that a controller is invoked when this url is requested.
+ * Indicates that a controller is going to serve the response when the specified url is requested.
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public @interface URL {
+    /**
+     * The string url to execute the controller.
+     * 
+     * @return
+     */
     String value();
 }

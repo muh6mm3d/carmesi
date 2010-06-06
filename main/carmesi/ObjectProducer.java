@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
 
 package carmesi;
@@ -9,10 +8,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * This component is like a controller with a result that is an object. This object is send to the client in some kind of representation.
- * Main use is returning JSON objects.
+ * This component is for generating objects and returning it to the browser in a JSON representation. The convertion from the java object to JSON
+ * is made automatically by Carmesi.
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public interface ObjectProducer<T> {
 

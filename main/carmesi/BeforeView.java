@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
 
 package carmesi;
@@ -12,9 +11,9 @@ import java.lang.annotation.Target;
 
 /**
  *
- * A controller with this annotation is executed before the response is served.
+ * A controller with this annotation is executed before the specified response is served.
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  *
  * TODO resolutions rules or precedence.
  */

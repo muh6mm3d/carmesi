@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
 
 package carmesi.internal;
@@ -23,8 +22,12 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 
 /**
+ * Generates automatically the config file that Carmesi requires.
  *
- * @author Victor
+ * See the help of your IDE for configuring the processor. If you do manual compilation, see (TODO javac annotation configuration link).
+ *
+ * @author Victor Hugo Herrera Maldonado
+ * @see RegistratorListener
  */
 @SupportedAnnotationTypes("carmesi.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)

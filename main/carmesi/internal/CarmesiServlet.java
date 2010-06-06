@@ -1,8 +1,6 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
-
 package carmesi.internal;
 
 import carmesi.Controller;
@@ -18,8 +16,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * Handles the controller objects annotated with ForwardToView or RedirectToView. Invokes the controller and if the invocation is successful (ie, without throwing exceptions)
+ * makes a forward or a redirect (accordly to the type of annotation) to the appropiate view.
  *
- * @author Victor
+ *
+ * @author Victor Hugo Herrera Maldonado
  */
 public class CarmesiServlet extends HttpServlet {
     private Map<String, Controller> mapControllers=new HashMap<String, Controller>();

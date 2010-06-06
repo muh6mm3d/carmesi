@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
 
 package carmesi.internal;
@@ -19,8 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * To handle controller objects annotated with BeforeView. The filter invokes the associated Controller before invoking the next filter in the chain.
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 
 public class CarmesiFilter implements Filter {

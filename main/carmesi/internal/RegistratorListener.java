@@ -1,7 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Insert license here.
  */
+
 package carmesi.internal;
 
 import carmesi.BeforeView;
@@ -19,12 +19,19 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.annotation.WebListener;
-//import org.scannotation.AnnotationDB;
-//import org.scannotation.WarUrlFinder;
 
 /**
  *
- * @author Victor
+ * Register the CarmesiFilter and CarmesiServlet with the controllers specified in the config file.
+ * <p>
+ * The config file is a simple text containing a list of full class name of the controllers. Each class name is specified in a separate line.
+ * If a line is empty or starts with a '#' symbol is skipped.
+ * <p>
+ * The name of config file must be controller.list within META-INF directory in the directory of classes of the web project (that is, WEB-INF/classes).
+ * <p>
+ * Carmesi includes an annotation processor for generating automatically this file without the user intervantion.
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
 @WebListener
 public class RegistratorListener implements ServletContextListener {
