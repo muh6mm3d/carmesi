@@ -80,17 +80,13 @@ public class RegistratorListener implements ServletContextListener {
                     continue;
                 }
                 Class<?> klass = Class.forName(line);
-                try {
+                if(Controller.class.isAssignableFrom(klass)){
                     Class<? extends Controller> subclass = klass.asSubclass(Controller.class);
                     addControllerClass(subclass);
-                } catch (ClassCastException ex) {
-                    ex.printStackTrace();
                 }
-                try {
+                if(ObjectProducer.class.isAssignableFrom(klass)){
                     Class<? extends ObjectProducer> subclass = klass.asSubclass(ObjectProducer.class);
                     addObjectProducerClass(dymanicServlet, subclass);
-                } catch (ClassCastException ex) {
-                    ex.printStackTrace();
                 }
             }
             reader.close();
