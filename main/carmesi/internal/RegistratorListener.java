@@ -6,6 +6,7 @@ package carmesi.internal;
 
 import carmesi.BeforeView;
 import carmesi.Controller;
+import carmesi.ObjectProducer;
 import carmesi.URL;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,34 +56,6 @@ public class RegistratorListener implements ServletContextListener {
             EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
             dynamicFilter.addMappingForUrlPatterns(set, false, "/*");
 
-
-//            AnnotationDB annotationDB = new AnnotationDB();
-//            annotationDB.scanArchives(WarUrlFinder.findWebInfClassesPath(context));
-//            Map<String, Set<String>> mapAnnotatedClasses = annotationDB.getAnnotationIndex();
-//            if(mapAnnotatedClasses.containsKey(BeforeView.class.getName())){
-//                for (String classname : mapAnnotatedClasses.get(BeforeView.class.getName())) {
-//                    Class<?> klass = Class.forName(classname);
-//                    try{
-//                        Class<? extends Controller> subclass = klass.asSubclass(Controller.class);
-//                        addControllerClass(subclass);
-//                    }catch(ClassCastException ex){
-//
-//                    }
-//                }
-//            }
-//            if(mapAnnotatedClasses.containsKey(RequestReceiver.class.getName())){
-//                for (String classname : mapAnnotatedClasses.get(RequestReceiver.class.getName())) {
-//                    Class<?> klass = Class.forName(classname);
-//                    try{
-//                        Class<? extends Controller> subclass = klass.asSubclass(Controller.class);
-//                        addControllerClass(subclass);
-//                    }catch(ClassCastException ex){
-//
-//                    }
-//                }
-//            }
-
-//            System.out.println("map: "+mapAnnotatedClasses);
             scanForClasses();
             addClassesFromConfigFile();
         } catch (Exception ex) {
@@ -111,10 +84,24 @@ public class RegistratorListener implements ServletContextListener {
                     Class<? extends Controller> subclass = klass.asSubclass(Controller.class);
                     addControllerClass(subclass);
                 } catch (ClassCastException ex) {
+                    ex.printStackTrace();
+                }
+                try {
+                    Class<? extends ObjectProducer> subclass = klass.asSubclass(ObjectProducer.class);
+                    addObjectProducerClass(dymanicServlet, subclass);
+                } catch (ClassCastException ex) {
+                    ex.printStackTrace();
                 }
             }
             reader.close();
         }
+    }
+
+    private void addObjectProducerClass(Dynamic dynamic, Class<? extends ObjectProducer> klass) throws InstantiationException, IllegalAccessException {
+        URL url = klass.getAnnotation(URL.class);
+        System.out.println("info: " + url);
+        carmesiServlet.addObjectProducer(url.value(), klass.newInstance());
+        dynamic.addMapping(url.value());
     }
 
     private void addControllerClass(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
@@ -140,4 +127,5 @@ public class RegistratorListener implements ServletContextListener {
 
     public void contextDestroyed(ServletContextEvent sce) {
     }
+    
 }

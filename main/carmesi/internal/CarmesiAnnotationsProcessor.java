@@ -45,12 +45,11 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
         
         Writer writer=null;
         try{
-            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.SOURCE_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH, elements.toArray(new Element[0]));
+            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH, elements.toArray(new Element[0]));
             writer=resource.openWriter();
             for(Element e:elements){
                 if(e instanceof TypeElement){
                     TypeElement tElement=(TypeElement)e;
-                    System.out.println(tElement.getQualifiedName());
                     writer.write(tElement.getQualifiedName().toString());
                     writer.write("\n");
                 }

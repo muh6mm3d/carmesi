@@ -7,6 +7,7 @@ import carmesi.Controller;
 import carmesi.ForwardToView;
 import carmesi.ObjectProducer;
 import carmesi.RedirectToView;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,13 +24,20 @@ import javax.servlet.http.HttpServletResponse;
  * @author Victor Hugo Herrera Maldonado
  */
 public class CarmesiServlet extends HttpServlet {
-    private Map<String, Controller> mapControllers=new HashMap<String, Controller>();
+    private Map<String, Object> mapControllers=new HashMap<String, Object>();
 
     public void addController(String url, Controller controller){
         if(url == null || url.trim().equals("")){
             throw new IllegalArgumentException("url is empty");
         }
         mapControllers.put(url, controller);
+    }
+
+    public void addObjectProducer(String url, ObjectProducer producer){
+        if(url == null || url.trim().equals("")){
+            throw new IllegalArgumentException("url is empty");
+        }
+        mapControllers.put(url, producer);
     }
    
     /** 
@@ -45,14 +53,19 @@ public class CarmesiServlet extends HttpServlet {
         uri=uri.replace(request.getServletContext().getContextPath(), "");
         if(mapControllers.containsKey(uri)){
             try{
-                Controller controller = mapControllers.get(uri);
-                controller.execute(request, response);
-                if(!(controller instanceof ObjectProducer)){
-                    if(controller.getClass().isAnnotationPresent(RedirectToView.class)){
-                        RedirectToView redirectToView=controller.getClass().getAnnotation(RedirectToView.class);
+                Object object = mapControllers.get(uri);
+                if(object instanceof ObjectProducer){
+                    Object o = ((ObjectProducer) object).get(request, response);
+                    String json=new GsonBuilder().create().toJson(o);
+                    response.getWriter().print(json);
+                    response.getWriter().close();
+                }
+                if(!(object instanceof ObjectProducer)){
+                    if(object.getClass().isAnnotationPresent(RedirectToView.class)){
+                        RedirectToView redirectToView=object.getClass().getAnnotation(RedirectToView.class);
                         response.sendRedirect(redirectToView.value());
-                    }else if(controller.getClass().isAnnotationPresent(ForwardToView.class)){
-                        ForwardToView forwardToView=controller.getClass().getAnnotation(ForwardToView.class);
+                    }else if(object.getClass().isAnnotationPresent(ForwardToView.class)){
+                        ForwardToView forwardToView=object.getClass().getAnnotation(ForwardToView.class);
                         request.getRequestDispatcher(forwardToView.value()).forward(request, response);
                     }
                 }
