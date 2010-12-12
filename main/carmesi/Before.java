@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface BeforeView {
+public @interface Before {
     /**
      * The view for what the controller is executed before being served.
      */

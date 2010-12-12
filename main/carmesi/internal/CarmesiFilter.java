@@ -39,6 +39,7 @@ public class CarmesiFilter implements Filter {
         String uri=hRequest.getRequestURI();
         uri=uri.replace(hRequest.getServletContext().getContextPath(), "");
         System.out.println("requested uri: "+uri);
+        System.out.println("controllers: "+mapControllers);
         if(mapControllers.containsKey(uri)){
             try{
                 mapControllers.get(uri).execute(hRequest, (HttpServletResponse)response);

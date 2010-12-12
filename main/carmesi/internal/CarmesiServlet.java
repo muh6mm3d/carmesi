@@ -4,9 +4,9 @@
 package carmesi.internal;
 
 import carmesi.Controller;
-import carmesi.ForwardToView;
+import carmesi.ForwardTo;
 import carmesi.ObjectProducer;
-import carmesi.RedirectToView;
+import carmesi.RedirectTo;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.util.HashMap;
@@ -59,13 +59,13 @@ public class CarmesiServlet extends HttpServlet {
                     String json=new GsonBuilder().create().toJson(o);
                     response.getWriter().print(json);
                     response.getWriter().close();
-                }
-                if(!(object instanceof ObjectProducer)){
-                    if(object.getClass().isAnnotationPresent(RedirectToView.class)){
-                        RedirectToView redirectToView=object.getClass().getAnnotation(RedirectToView.class);
+                }else{
+                    ((Controller)object).execute(request, response);
+                    if(object.getClass().isAnnotationPresent(RedirectTo.class)){
+                        RedirectTo redirectToView=object.getClass().getAnnotation(RedirectTo.class);
                         response.sendRedirect(redirectToView.value());
-                    }else if(object.getClass().isAnnotationPresent(ForwardToView.class)){
-                        ForwardToView forwardToView=object.getClass().getAnnotation(ForwardToView.class);
+                    }else if(object.getClass().isAnnotationPresent(ForwardTo.class)){
+                        ForwardTo forwardToView=object.getClass().getAnnotation(ForwardTo.class);
                         request.getRequestDispatcher(forwardToView.value()).forward(request, response);
                     }
                 }

@@ -4,7 +4,7 @@
 
 package carmesi.internal;
 
-import carmesi.BeforeView;
+import carmesi.Before;
 import carmesi.Controller;
 import carmesi.ObjectProducer;
 import carmesi.URL;
@@ -56,26 +56,21 @@ public class RegistratorListener implements ServletContextListener {
             EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
             dynamicFilter.addMappingForUrlPatterns(set, false, "/*");
 
-            scanForClasses();
             addClassesFromConfigFile();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private void scanForClasses(){
-        
-    }
-
     private void addClassesFromConfigFile() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException{
         InputStream input;// = context.getResourceAsStream("META-INF/controllers.list");
         input=getClass().getResourceAsStream("/"+CONFIG_FILE_PATH);
-        System.out.println("input: "+input);
+//        System.out.println("input: "+input);
         if (input != null) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
             String line;
             while ((line = reader.readLine()) != null) {
-                System.out.println("line: " + line);
+//                System.out.println("line: " + line);
                 if (line.trim().startsWith("#")) {
                     continue;
                 }
@@ -95,14 +90,15 @@ public class RegistratorListener implements ServletContextListener {
 
     private void addObjectProducerClass(Dynamic dynamic, Class<? extends ObjectProducer> klass) throws InstantiationException, IllegalAccessException {
         URL url = klass.getAnnotation(URL.class);
-        System.out.println("info: " + url);
+//        System.out.println("info: " + url);
         carmesiServlet.addObjectProducer(url.value(), klass.newInstance());
         dynamic.addMapping(url.value());
     }
 
     private void addControllerClass(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
-        if (klass.isAnnotationPresent(BeforeView.class)) {
-            addControlleBeforeRequest(klass);
+        System.out.println("controller class: "+klass);
+        if (klass.isAnnotationPresent(Before.class)) {
+            addControllerBeforeRequest(klass);
         } else if (klass.isAnnotationPresent(URL.class)){
             addControllerToView(dymanicServlet, klass);
         }
@@ -116,8 +112,8 @@ public class RegistratorListener implements ServletContextListener {
         dynamic.addMapping(url.value());
     }
 
-    private void addControlleBeforeRequest(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
-        BeforeView beforeRequest = klass.getAnnotation(BeforeView.class);
+    private void addControllerBeforeRequest(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
+        Before beforeRequest = klass.getAnnotation(Before.class);
         carmesiFilter.addController(beforeRequest.value(), klass.newInstance());
     }
 
