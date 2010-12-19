@@ -5,7 +5,8 @@
 
 package carmesi.umbrella;
 
-import carmesi.Controller;
+import carmesi.ForwardTo;
+import carmesi.RedirectTo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.beans.BeanInfo;
@@ -22,12 +23,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -40,7 +35,7 @@ import javax.servlet.http.HttpSession;
  *
  * @author Victor
  */
-public class DynamicController{
+public class DynamicController implements  ControllerWrapper{
     private Object object;
     private Method method;
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
@@ -58,6 +53,20 @@ public class DynamicController{
     Object getObject() {
         return object;
     }
+
+    public Result execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return execute(new ExecutionContext(request, response));
+    }
+
+    public String getForwardTo() {
+        ForwardTo forwardTo = object.getClass().getAnnotation(ForwardTo.class);
+        return forwardTo != null? forwardTo.value() : null;
+    }
+
+    public String getRedirectTo() {
+        RedirectTo redirectTo = object.getClass().getAnnotation(RedirectTo.class);
+        return redirectTo != null? redirectTo.value() : null;
+    }
     
     public ControllerResult execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
         Class<?>[] parameterTypes = method.getParameterTypes();
@@ -68,7 +77,7 @@ public class DynamicController{
         for(int i=0; i < parameterTypes.length; i++){
             actualParameters[i]=getActualParameter(new TargetInfo(parameterTypes[i], parameterAnnotations[i]), context);
         }
-        return new ControllerResult(method.invoke(object, actualParameters), method.getReturnType().equals(Void.class));
+        return new ControllerResult(method.invoke(object, actualParameters), method.getReturnType().equals(Void.TYPE), context);
     }
 
     private Object getActualParameter(TargetInfo parameterInfo, ExecutionContext context) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException {
@@ -212,13 +221,15 @@ public class DynamicController{
         return new DynamicController(object, object.getClass().getDeclaredMethods()[0]);
     }
 
-    public class ControllerResult{
+    public class ControllerResult implements  ControllerWrapper.Result{
         private Object value;
         private boolean isVoid;
+        private ExecutionContext executionContext;
 
-        private ControllerResult(Object v, boolean b) {
+        private ControllerResult(Object v, boolean b, ExecutionContext context) {
             value=v;
             isVoid=b;
+            executionContext=context;
         }
 
         public boolean isVoid() {
@@ -236,7 +247,7 @@ public class DynamicController{
             }
         }
 
-        public void process(ExecutionContext executionContext) {
+        public void process() {
             if(isVoid){
                 return;
             }else{

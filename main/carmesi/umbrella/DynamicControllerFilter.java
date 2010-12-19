@@ -5,6 +5,7 @@
 
 package carmesi.umbrella;
 
+import carmesi.umbrella.ControllerWrapper.Result;
 import carmesi.umbrella.DynamicController.ControllerResult;
 import carmesi.umbrella.ExecutionContext;
 import java.beans.IntrospectionException;
@@ -26,22 +27,25 @@ import javax.servlet.http.HttpServletResponse;
  * @author Victor
  */
 public class DynamicControllerFilter implements  Filter{
-    private DynamicController controller;
+    private ControllerWrapper controllerWrapper;
 
-    public DynamicControllerFilter(Object o){
-        controller=DynamicController.createDynamicController(o);
+    public DynamicControllerFilter(ControllerWrapper controller){
+        controllerWrapper=controller;
     }
     
     public void init(FilterConfig filterConfig) throws ServletException {
         
     }
+    
+    public void destroy() {
+        
+    }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
-            ExecutionContext executionContext = new ExecutionContext((HttpServletRequest)request, (HttpServletResponse)response);
-            ControllerResult result;
-            result = controller.execute(executionContext);
-            result.process(executionContext);
+            Result result = controllerWrapper.execute((HttpServletRequest)request, (HttpServletResponse)response);
+            result.process();
+            chain.doFilter(request, response);
         } catch (IllegalAccessException ex) {
             throw new ServletException(ex);
         } catch (InvocationTargetException ex) {
@@ -50,11 +54,9 @@ public class DynamicControllerFilter implements  Filter{
             throw new ServletException(ex);
         } catch (IntrospectionException ex) {
             throw new ServletException(ex);
+        } catch (Exception ex) {
+            throw new ServletException(ex);
         }
-        chain.doFilter(request, response);
-    }
-
-    public void destroy() {
         
     }
 

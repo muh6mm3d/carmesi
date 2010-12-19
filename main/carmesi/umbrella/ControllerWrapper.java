@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor
  */
-interface ControllerWrapper {
+public interface ControllerWrapper {
     
     Result execute(HttpServletRequest request, HttpServletResponse response) throws Exception;
     

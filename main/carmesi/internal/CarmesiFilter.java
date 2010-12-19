@@ -35,17 +35,12 @@ public class CarmesiFilter implements Filter {
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest hRequest=(HttpServletRequest)request;
-        String uri=hRequest.getRequestURI();
-        uri=uri.replace(hRequest.getServletContext().getContextPath(), "");
-//        System.out.println("requested uri: "+uri);
-//        System.out.println("controllers: "+mapControllers);
         try{
-            controller.execute(hRequest, (HttpServletResponse)response);
+            controller.execute((HttpServletRequest)request, (HttpServletResponse)response);
+            chain.doFilter(request, response);
         }catch(Exception ex){
             throw new ServletException(ex);
         }
-        chain.doFilter(request, response);
     }
 
     public void destroy() {

@@ -6,8 +6,11 @@ package carmesi.internal;
 import carmesi.Before;
 import carmesi.Controller;
 import carmesi.URL;
+import carmesi.umbrella.ControllerWrapper;
+import carmesi.umbrella.DynamicController;
 import carmesi.umbrella.DynamicControllerServlet;
 import carmesi.umbrella.DynamicControllerFilter;
+import carmesi.umbrella.MyController;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,24 +127,26 @@ public class RegistratorListener implements ServletContextListener {
 //    }
 
     private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
-        HttpServlet servlet;
+        ControllerWrapper controllerWrapper;
         if (Controller.class.isAssignableFrom(klass)) {
-            servlet=new CarmesiServlet(createObject(klass.asSubclass(Controller.class)));
+            controllerWrapper=new MyController(createObject(klass.asSubclass(Controller.class)));
         }else{
-            servlet=new DynamicControllerServlet(createObject(klass));
+            controllerWrapper=DynamicController.createDynamicController(createObject(klass));
         }
+        DynamicControllerServlet servlet=new DynamicControllerServlet(controllerWrapper);
         ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), servlet);
         URL url = klass.getAnnotation(URL.class);
         dynamic.addMapping(url.value());
     }
 
     private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
-        Filter filter;
+        ControllerWrapper controllerWrapper;
         if (Controller.class.isAssignableFrom(klass)) {
-            filter=new CarmesiFilter(createObject(klass.asSubclass(Controller.class)));
+            controllerWrapper=new MyController(createObject(klass.asSubclass(Controller.class)));
         }else{
-            filter=new DynamicControllerFilter(createObject(klass));
+            controllerWrapper=DynamicController.createDynamicController(createObject(klass));
         }
+        Filter filter=new DynamicControllerFilter(controllerWrapper);
         FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), filter);
         Before before = klass.getAnnotation(Before.class);
         EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
