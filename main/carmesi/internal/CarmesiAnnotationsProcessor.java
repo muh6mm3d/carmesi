@@ -70,5 +70,9 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
         }
         return true;
     }
+    
+//    private void checkValidClass(){
+//        
+//    }
 
 }
