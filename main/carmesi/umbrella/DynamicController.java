@@ -5,6 +5,7 @@
 
 package carmesi.umbrella;
 
+import carmesi.Controller;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.beans.BeanInfo;
@@ -39,7 +40,7 @@ import javax.servlet.http.HttpSession;
  *
  * @author Victor
  */
-public class DynamicController {
+public class DynamicController{
     private Object object;
     private Method method;
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
@@ -58,11 +59,7 @@ public class DynamicController {
         return object;
     }
     
-    public void destroy(){
-        
-    }
-    
-    public ControllerResult invoke(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
+    public ControllerResult execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Object[] actualParameters=new Object[parameterTypes.length];
@@ -214,7 +211,7 @@ public class DynamicController {
         }
         return new DynamicController(object, object.getClass().getDeclaredMethods()[0]);
     }
-    
+
     public class ControllerResult{
         private Object value;
         private boolean isVoid;

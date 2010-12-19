@@ -40,7 +40,7 @@ public class DynamicControllerFilter implements  Filter{
         try {
             ExecutionContext executionContext = new ExecutionContext((HttpServletRequest)request, (HttpServletResponse)response);
             ControllerResult result;
-            result = controller.invoke(executionContext);
+            result = controller.execute(executionContext);
             result.process(executionContext);
         } catch (IllegalAccessException ex) {
             throw new ServletException(ex);

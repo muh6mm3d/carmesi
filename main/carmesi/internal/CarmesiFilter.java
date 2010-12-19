@@ -24,28 +24,26 @@ import javax.servlet.http.HttpServletResponse;
  */
 
 public class CarmesiFilter implements Filter {
-    private Map<String, Controller> mapControllers=new HashMap<String, Controller>();
+    private Controller controller;
 
+    public CarmesiFilter(Controller controller) {
+        this.controller = controller;
+    }
+    
     public void init(FilterConfig filterConfig) throws ServletException {
         
-    }
-
-    public void addController(String url, Controller controller){
-        mapControllers.put(url, controller);
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest hRequest=(HttpServletRequest)request;
         String uri=hRequest.getRequestURI();
         uri=uri.replace(hRequest.getServletContext().getContextPath(), "");
-        System.out.println("requested uri: "+uri);
-        System.out.println("controllers: "+mapControllers);
-        if(mapControllers.containsKey(uri)){
-            try{
-                mapControllers.get(uri).execute(hRequest, (HttpServletResponse)response);
-            }catch(Exception ex){
-                throw new ServletException(ex);
-            }
+//        System.out.println("requested uri: "+uri);
+//        System.out.println("controllers: "+mapControllers);
+        try{
+            controller.execute(hRequest, (HttpServletResponse)response);
+        }catch(Exception ex){
+            throw new ServletException(ex);
         }
         chain.doFilter(request, response);
     }

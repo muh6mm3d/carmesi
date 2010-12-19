@@ -21,13 +21,14 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.inject.Inject;
 import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.annotation.WebListener;
+import javax.servlet.http.HttpServlet;
 
 /**
  *
@@ -47,9 +48,9 @@ public class RegistratorListener implements ServletContextListener {
 
     public static final String CONFIG_FILE_PATH = "META-INF/controllers.list";
     private ServletContext context;
-    private CarmesiServlet carmesiServlet;
-    private Dynamic dymanicServlet;
-    private CarmesiFilter carmesiFilter;
+//    private CarmesiServlet carmesiServlet;
+//    private Dynamic dymanicServlet;
+//    private CarmesiFilter carmesiFilter;
     
     private @Inject BeanManager beanManager;
     private CreationalContext creationalContext;
@@ -59,14 +60,14 @@ public class RegistratorListener implements ServletContextListener {
         try {
             //Controller with view
             context = sce.getServletContext();
-            carmesiServlet = new CarmesiServlet();
-            dymanicServlet = context.addServlet("Umbrella Servlet", carmesiServlet);
+//            carmesiServlet = new CarmesiServlet();
+//            dymanicServlet = context.addServlet("Umbrella Servlet", carmesiServlet);
 
             //Controller before page
-            carmesiFilter = new CarmesiFilter();
-            FilterRegistration.Dynamic dynamicFilter = sce.getServletContext().addFilter("Umbrella Filter", carmesiFilter);
-            EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
-            dynamicFilter.addMappingForUrlPatterns(set, false, "/*");
+//            carmesiFilter = new CarmesiFilter();
+//            FilterRegistration.Dynamic dynamicFilter = sce.getServletContext().addFilter("Umbrella Filter", carmesiFilter);
+//            EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
+//            dynamicFilter.addMappingForUrlPatterns(set, false, "/*");
 
             addClassesFromConfigFile();
         } catch (Exception ex) {
@@ -89,62 +90,59 @@ public class RegistratorListener implements ServletContextListener {
                     continue;
                 }
                 Class<?> klass = Class.forName(line);
-                if (Controller.class.isAssignableFrom(klass)) {
-                    Class<? extends Controller> subclass = klass.asSubclass(Controller.class);
-                    addControllerClass(subclass);
+                if (klass.isAnnotationPresent(URL.class)) {
+                    addControllerServlet((Class<Object>) klass);
+                } else if (klass.isAnnotationPresent(Before.class)){
+                    addControllerFilter((Class<Object>) klass);
                 }
-                /*if(ObjectProducer.class.isAssignableFrom(klass)){
-                Class<? extends ObjectProducer> subclass = klass.asSubclass(ObjectProducer.class);
-                addObjectProducerClass(dymanicServlet, subclass);
-                }*/
-
-                if (!Controller.class.isAssignableFrom(klass) /* && !ObjectProducer.class.isAssignableFrom(klass)*/ ) {
-                    URL url = klass.getAnnotation(URL.class);
-                    if (url != null) {
-                        addDynamicControllerServlet((Class<Object>) klass);
-                    } else {
-                        Before before = klass.getAnnotation(Before.class);
-                        if (before != null) {
-                            addDynamicControllerFilter((Class<Object>) klass);
-                        }
-                    }
-                }
-
             }
             reader.close();
         }
     }
     
-    private void addControllerClass(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
-        System.out.println("controller class: " + klass);
-        if (klass.isAnnotationPresent(URL.class)) {
-            addControllerToView(dymanicServlet, klass);
-        }else if (klass.isAnnotationPresent(Before.class)) {
-            addControllerBeforeRequest(klass);
-        } 
-    }
+//    private void addControllerClass(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
+//        System.out.println("controller class: " + klass);
+//        if (klass.isAnnotationPresent(URL.class)) {
+//            addControllerToView(klass);
+//        }else if (klass.isAnnotationPresent(Before.class)) {
+//            addControllerBeforeRequest(klass);
+//        } 
+//    }
 
-    private void addControllerToView(Dynamic dynamic, Class<? extends Controller> klass) throws IllegalAccessException, InstantiationException {
+//    private void addControllerToView(Class<? extends Controller> klass) throws IllegalAccessException, InstantiationException {
+//        ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), new CarmesiServlet(createObject(klass)));
+//        URL url = klass.getAnnotation(URL.class);
+//        dynamic.addMapping(url.value());
+//    }
+//
+//    private void addControllerBeforeRequest(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
+//        Controller controller = createObject(klass);
+//        FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), new CarmesiFilter(controller));
+//        Before before = klass.getAnnotation(Before.class);
+//        EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
+//        dynamic.addMappingForUrlPatterns(set, false, before.value());
+//    }
+
+    private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
+        HttpServlet servlet;
+        if (Controller.class.isAssignableFrom(klass)) {
+            servlet=new CarmesiServlet(createObject(klass.asSubclass(Controller.class)));
+        }else{
+            servlet=new DynamicControllerServlet(createObject(klass));
+        }
+        ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), servlet);
         URL url = klass.getAnnotation(URL.class);
-        carmesiServlet.addController(url.value(), createObject(klass));
         dynamic.addMapping(url.value());
     }
 
-    private void addControllerBeforeRequest(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
-        Before beforeRequest = klass.getAnnotation(Before.class);
-        carmesiFilter.addController(beforeRequest.value(), createObject(klass));
-    }
-
-    private void addDynamicControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
-        Object object = createObject(klass);
-        ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), new DynamicControllerServlet(object));
-        URL url = klass.getAnnotation(URL.class);
-        dynamic.addMapping(url.value());
-    }
-
-    private void addDynamicControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
-        Object object = createObject(klass);
-        FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), new DynamicControllerFilter(object));
+    private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
+        Filter filter;
+        if (Controller.class.isAssignableFrom(klass)) {
+            filter=new CarmesiFilter(createObject(klass.asSubclass(Controller.class)));
+        }else{
+            filter=new DynamicControllerFilter(createObject(klass));
+        }
+        FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), filter);
         Before before = klass.getAnnotation(Before.class);
         EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
         dynamic.addMappingForUrlPatterns(set, false, before.value());

@@ -7,6 +7,7 @@ package carmesi.umbrella;
 
 import carmesi.ForwardTo;
 import carmesi.RedirectTo;
+import carmesi.umbrella.ControllerWrapper.Result;
 import carmesi.umbrella.DynamicController.ControllerResult;
 import java.beans.IntrospectionException;
 import java.io.IOException;
@@ -28,15 +29,35 @@ public class DynamicControllerServlet extends  HttpServlet{
     }
     
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            ExecutionContext executionContext = new ExecutionContext(req, resp);
-            ControllerResult result = controller.invoke(executionContext);
+//            ControllerWrapper wrapper=null;
+//            Result r = wrapper.execute(request, response);
+//            if(!r.isVoid()){
+//                r.writeToResponse(response);
+//            }else{
+//                r.process();
+//                if(wrapper.getForwardTo() != null){
+//                    request.getRequestDispatcher(wrapper.getForwardTo()).forward(request, response);
+//                }else if(wrapper.getRedirectTo() != null){
+//                    String url=wrapper.getRedirectTo();
+//                    if(url.startsWith("//")){
+//                        url=url.substring(2);
+//                    }else if(url.startsWith("/")){
+//                        url=getServletContext().getContextPath()+url;
+//                    }
+//                    response.sendRedirect(url);
+//                }
+//            }
+            
+            
+            ExecutionContext executionContext = new ExecutionContext(request, response);
+            ControllerResult result = controller.execute(executionContext);
             ForwardTo forwardTo=controller.getObject().getClass().getAnnotation(ForwardTo.class);
             RedirectTo redirectTo=controller.getObject().getClass().getAnnotation(RedirectTo.class);
             if(forwardTo != null){
                 result.process(executionContext);
-                req.getRequestDispatcher(forwardTo.value()).forward(req, resp);
+                request.getRequestDispatcher(forwardTo.value()).forward(request, response);
             }else if(redirectTo != null){
                 result.process(executionContext);
                 String url=redirectTo.value();
@@ -45,10 +66,9 @@ public class DynamicControllerServlet extends  HttpServlet{
                 }else if(url.startsWith("/")){
                     url=getServletContext().getContextPath()+url;
                 }
-                resp.sendRedirect(url);
+                response.sendRedirect(url);
             }else{
-                result.writeToResponse(resp);
-                
+                result.writeToResponse(response);
             }
         } catch (IllegalAccessException ex) {
             throw new ServletException(ex);
