@@ -6,10 +6,13 @@ package carmesi.internal;
 
 import carmesi.Before;
 import carmesi.URL;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -33,7 +36,7 @@ import javax.tools.StandardLocation;
 @SupportedAnnotationTypes("carmesi.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class CarmesiAnnotationsProcessor extends AbstractProcessor{
-
+    private Set<String> classNames=new TreeSet<String>();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -46,17 +49,15 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
         
         Writer writer=null;
         try{
-            FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH, elements.toArray(new Element[0]));
-            writer=resource.openWriter();
             for(Element e:elements){
                 if(e instanceof TypeElement){
                     TypeElement tElement=(TypeElement)e;
-                    writer.write(tElement.getQualifiedName().toString());
-                    writer.write("\n");
+                    classNames.add(tElement.getQualifiedName().toString());
                 }
             }
-            writer.close();
-            writer=null;
+            if(!roundEnv.processingOver()){
+                writeConfigFile();
+            }
         }catch(IOException ex){
             processingEnv.getMessager().printMessage(Kind.MANDATORY_WARNING, "Can not create configuration file: "+ ex);
         }finally{
@@ -71,8 +72,40 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
         return true;
     }
     
-//    private void checkValidClass(){
-//        
-//    }
-
+    private void writeConfigFile() throws IOException{
+        Writer writer=null;
+//        FileObject resource = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH);
+//        if(resource != null){
+//            try{
+//                Reader reader = resource.openReader(false);
+//                BufferedReader r=new BufferedReader(reader);
+//                String className;
+//                while((className=r.readLine()) != null){
+//                    Class<?> klass;
+//                    try {
+//                        klass = Class.forName(className);
+//                        if(klass.isAnnotationPresent(URL.class) || klass.isAnnotationPresent(Before.class)){
+//                            classNames.add(className);
+//                        }
+//                    } catch (ClassNotFoundException ex) {
+//
+//                    }
+//                }
+//                r.close();
+//            }catch(UnsupportedOperationException ex){
+//                JOptionPane.showMessageDialog(null, "unsupported");
+//            }
+//        }
+////        resource.
+        
+        FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH, new Element[]{});
+        writer=resource.openWriter();
+        for(String className:classNames){
+            writer.write(className);
+            writer.write("\n");
+        }
+        writer.close();
+        writer=null;
+    }
+    
 }
