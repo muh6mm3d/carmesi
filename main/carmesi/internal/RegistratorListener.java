@@ -31,7 +31,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpServlet;
 
 /**
  *
@@ -51,9 +50,6 @@ public class RegistratorListener implements ServletContextListener {
 
     public static final String CONFIG_FILE_PATH = "META-INF/controllers.list";
     private ServletContext context;
-//    private CarmesiServlet carmesiServlet;
-//    private Dynamic dymanicServlet;
-//    private CarmesiFilter carmesiFilter;
     
     private @Inject BeanManager beanManager;
     private CreationalContext creationalContext;
@@ -61,17 +57,7 @@ public class RegistratorListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent sce) {
         try {
-            //Controller with view
             context = sce.getServletContext();
-//            carmesiServlet = new CarmesiServlet();
-//            dymanicServlet = context.addServlet("Umbrella Servlet", carmesiServlet);
-
-            //Controller before page
-//            carmesiFilter = new CarmesiFilter();
-//            FilterRegistration.Dynamic dynamicFilter = sce.getServletContext().addFilter("Umbrella Filter", carmesiFilter);
-//            EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
-//            dynamicFilter.addMappingForUrlPatterns(set, false, "/*");
-
             addClassesFromConfigFile();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -103,29 +89,6 @@ public class RegistratorListener implements ServletContextListener {
         }
     }
     
-//    private void addControllerClass(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
-//        System.out.println("controller class: " + klass);
-//        if (klass.isAnnotationPresent(URL.class)) {
-//            addControllerToView(klass);
-//        }else if (klass.isAnnotationPresent(Before.class)) {
-//            addControllerBeforeRequest(klass);
-//        } 
-//    }
-
-//    private void addControllerToView(Class<? extends Controller> klass) throws IllegalAccessException, InstantiationException {
-//        ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), new CarmesiServlet(createObject(klass)));
-//        URL url = klass.getAnnotation(URL.class);
-//        dynamic.addMapping(url.value());
-//    }
-//
-//    private void addControllerBeforeRequest(Class<? extends Controller> klass) throws InstantiationException, IllegalAccessException {
-//        Controller controller = createObject(klass);
-//        FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), new CarmesiFilter(controller));
-//        Before before = klass.getAnnotation(Before.class);
-//        EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
-//        dynamic.addMappingForUrlPatterns(set, false, before.value());
-//    }
-
     private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
         ControllerWrapper controllerWrapper;
         if (Controller.class.isAssignableFrom(klass)) {
