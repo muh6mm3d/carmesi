@@ -74,30 +74,6 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
     
     private void writeConfigFile() throws IOException{
         Writer writer=null;
-//        FileObject resource = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH);
-//        if(resource != null){
-//            try{
-//                Reader reader = resource.openReader(false);
-//                BufferedReader r=new BufferedReader(reader);
-//                String className;
-//                while((className=r.readLine()) != null){
-//                    Class<?> klass;
-//                    try {
-//                        klass = Class.forName(className);
-//                        if(klass.isAnnotationPresent(URL.class) || klass.isAnnotationPresent(Before.class)){
-//                            classNames.add(className);
-//                        }
-//                    } catch (ClassNotFoundException ex) {
-//
-//                    }
-//                }
-//                r.close();
-//            }catch(UnsupportedOperationException ex){
-//                JOptionPane.showMessageDialog(null, "unsupported");
-//            }
-//        }
-////        resource.
-        
         FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH, new Element[]{});
         writer=resource.openWriter();
         for(String className:classNames){
