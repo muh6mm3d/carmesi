@@ -21,8 +21,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -215,10 +219,16 @@ public class DynamicController implements  ControllerWrapper{
     }
     
     public static <T> DynamicController createDynamicController(Object object) {
-        if(object.getClass().getDeclaredMethods().length != 1 && !Modifier.isPublic(object.getClass().getDeclaredMethods()[0].getModifiers())){
+        List<Method> methods=new LinkedList<Method>();
+        for(Method method:object.getClass().getDeclaredMethods()){
+            if(Modifier.isPublic(method.getModifiers()) && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)){
+                methods.add(method);
+            }
+        }
+        if(methods.size() != 1){
             throw new IllegalArgumentException("Controller must have one and only one public method.");
         }
-        return new DynamicController(object, object.getClass().getDeclaredMethods()[0]);
+        return new DynamicController(object, methods.get(0));
     }
 
     public class ControllerResult implements  ControllerWrapper.Result{
