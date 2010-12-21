@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package carmesi.umbrella;
+package carmesi.internal;
 
 import carmesi.Controller;
 import carmesi.ForwardTo;
@@ -16,10 +16,10 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor
  */
-public class MyController implements  ControllerWrapper{
+class ControllerAdapter implements  ControllerWrapper{
     private Controller controller;
 
-    public MyController(Controller controller) {
+    public ControllerAdapter(Controller controller) {
         this.controller = controller;
         
     }

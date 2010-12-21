@@ -3,9 +3,9 @@
  * and open the template in the editor.
  */
 
-package carmesi.umbrella;
+package carmesi.internal;
 
-import carmesi.umbrella.ControllerWrapper.Result;
+import carmesi.internal.ControllerWrapper.Result;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -18,11 +18,10 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor
  */
-public class DynamicControllerServlet extends  HttpServlet{
-//    private DynamicController controller;
+class ControllerServlet extends  HttpServlet{
     private ControllerWrapper wrapper=null;
 
-    public DynamicControllerServlet(ControllerWrapper wrapper){
+    public ControllerServlet(ControllerWrapper wrapper){
         this.wrapper=wrapper;
     }
     

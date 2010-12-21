@@ -8,7 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Indicates that a controller is going to serve the response when the specified url is requested.
+ * Indicates that a controller is going to execute the response when the specified url is requested.
  *
  * @author Victor Hugo Herrera Maldonado
  */

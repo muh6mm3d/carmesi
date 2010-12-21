@@ -3,8 +3,15 @@
  * and open the template in the editor.
  */
 
-package carmesi.umbrella;
+package carmesi.internal;
 
+import carmesi.RequestParameter;
+import carmesi.RequestAttribute;
+import carmesi.ContextParameter;
+import carmesi.RequestBean;
+import carmesi.ApplicationAttribute;
+import carmesi.SessionAttribute;
+import carmesi.CookieValue;
 import carmesi.ForwardTo;
 import carmesi.RedirectTo;
 import com.google.gson.Gson;
@@ -39,7 +46,7 @@ import javax.servlet.http.HttpSession;
  *
  * @author Victor
  */
-public class DynamicController implements  ControllerWrapper{
+class DynamicController implements  ControllerWrapper{
     private Object object;
     private Method method;
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();

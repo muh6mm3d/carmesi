@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package carmesi.umbrella;
+package carmesi.internal;
 
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor
  */
-public interface ControllerWrapper {
+interface ControllerWrapper {
     
     Result execute(HttpServletRequest request, HttpServletResponse response) throws Exception;
     

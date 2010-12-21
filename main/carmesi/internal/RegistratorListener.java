@@ -6,11 +6,6 @@ package carmesi.internal;
 import carmesi.Before;
 import carmesi.Controller;
 import carmesi.URL;
-import carmesi.umbrella.ControllerWrapper;
-import carmesi.umbrella.DynamicController;
-import carmesi.umbrella.DynamicControllerServlet;
-import carmesi.umbrella.DynamicControllerFilter;
-import carmesi.umbrella.MyController;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +37,8 @@ import javax.servlet.annotation.WebListener;
  * The name of config file must be controller.list within META-INF directory in the directory of classes of the web project (that is, WEB-INF/classes).
  * <p>
  * Carmesi includes an annotation processor for generating automatically this file without the user intervantion.
+ * 
+ * TODO check if this is a compatible CDI Extension (or make).
  * 
  * @author Victor Hugo Herrera Maldonado
  */
@@ -92,11 +89,11 @@ public class RegistratorListener implements ServletContextListener {
     private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
         ControllerWrapper controllerWrapper;
         if (Controller.class.isAssignableFrom(klass)) {
-            controllerWrapper=new MyController(createObject(klass.asSubclass(Controller.class)));
+            controllerWrapper=new ControllerAdapter(createObject(klass.asSubclass(Controller.class)));
         }else{
             controllerWrapper=DynamicController.createDynamicController(createObject(klass));
         }
-        DynamicControllerServlet servlet=new DynamicControllerServlet(controllerWrapper);
+        ControllerServlet servlet=new ControllerServlet(controllerWrapper);
         ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), servlet);
         URL url = klass.getAnnotation(URL.class);
         dynamic.addMapping(url.value());
@@ -105,11 +102,11 @@ public class RegistratorListener implements ServletContextListener {
     private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
         ControllerWrapper controllerWrapper;
         if (Controller.class.isAssignableFrom(klass)) {
-            controllerWrapper=new MyController(createObject(klass.asSubclass(Controller.class)));
+            controllerWrapper=new ControllerAdapter(createObject(klass.asSubclass(Controller.class)));
         }else{
             controllerWrapper=DynamicController.createDynamicController(createObject(klass));
         }
-        Filter filter=new DynamicControllerFilter(controllerWrapper);
+        Filter filter=new ControllerFilter(controllerWrapper);
         FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), filter);
         Before before = klass.getAnnotation(Before.class);
         EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);

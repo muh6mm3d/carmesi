@@ -18,9 +18,10 @@ import javax.servlet.http.HttpServletResponse;
  * Handles the controller objects annotated with ForwardToView or RedirectToView. Invokes the controller and if the invocation is successful (ie, without throwing exceptions)
  * makes a forward or a redirect (accordly to the type of annotation) to the appropiate view.
  *
- *
  * @author Victor Hugo Herrera Maldonado
+ * @deprecated See ControllerServlet
  */
+@Deprecated
 public class CarmesiServlet extends HttpServlet {
     private Controller controller;
 

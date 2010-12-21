@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package carmesi.umbrella;
+package carmesi.internal;
 
+import carmesi.DatePattern;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;

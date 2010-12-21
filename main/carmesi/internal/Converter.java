@@ -1,4 +1,4 @@
-package carmesi.umbrella;
+package carmesi.internal;
 
 interface Converter<T> {
 

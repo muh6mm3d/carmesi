@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 /**
  *
- * A controller with this annotation is executed before the specified response is served.
+ * A controller with this annotation is executed before the resource specified by the url value is served.
  *
  * @author Victor Hugo Herrera Maldonado
  *
@@ -21,7 +21,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Before {
     /**
-     * The view for what the controller is executed before being served.
+     * The controller is executed the resource specified by value is served.
      */
     String value();
 }

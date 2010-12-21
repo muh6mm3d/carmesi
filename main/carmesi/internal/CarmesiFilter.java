@@ -21,8 +21,10 @@ import javax.servlet.http.HttpServletResponse;
  * To handle controller objects annotated with BeforeView. The filter invokes the associated Controller before invoking the next filter in the chain.
  *
  * @author Victor Hugo Herrera Maldonado
+ * @deprecated See ControllerFilter
+ * 
  */
-
+@Deprecated
 public class CarmesiFilter implements Filter {
     private Controller controller;
 

@@ -1,10 +1,10 @@
-package carmesi.umbrella;
+package carmesi.internal;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class ExecutionContext {
+class ExecutionContext {
 
     private HttpServletRequest request;
     private HttpServletResponse response;

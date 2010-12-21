@@ -3,16 +3,12 @@
  * and open the template in the editor.
  */
 
-package carmesi.umbrella;
+package carmesi.internal;
 
-import carmesi.umbrella.ControllerWrapper.Result;
-import carmesi.umbrella.DynamicController.ControllerResult;
-import carmesi.umbrella.ExecutionContext;
+import carmesi.internal.ControllerWrapper.Result;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -26,10 +22,10 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor
  */
-public class DynamicControllerFilter implements  Filter{
+class ControllerFilter implements  Filter{
     private ControllerWrapper controllerWrapper;
 
-    public DynamicControllerFilter(ControllerWrapper controller){
+    public ControllerFilter(ControllerWrapper controller){
         controllerWrapper=controller;
     }
     
