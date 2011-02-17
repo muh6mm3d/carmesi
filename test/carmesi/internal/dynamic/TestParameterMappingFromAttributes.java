@@ -1,10 +1,12 @@
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
+import carmesi.internal.dynamic.DynamicController;
 import org.junit.Rule;
 import org.junit.Before;
 import carmesi.ApplicationAttribute;
 import carmesi.SessionAttribute;
 import carmesi.RequestAttribute;
+import carmesi.internal.RequestResponseMocker;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

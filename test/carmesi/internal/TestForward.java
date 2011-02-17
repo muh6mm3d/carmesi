@@ -3,11 +3,14 @@
 
 package carmesi.internal;
 
+import carmesi.Controller;
 import carmesi.URL;
-import carmesi.internal.TestRedirect.RedirectController;
 import javax.servlet.ServletConfig;
 import carmesi.ForwardTo;
+import carmesi.internal.dynamic.DynamicControllerServlet;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import static org.mockito.Mockito.*;
@@ -23,7 +26,19 @@ public class TestForward {
     @Test
     public void shouldForwardTo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        ControllerServlet servlet=new ControllerServlet(DynamicController.createDynamicController(new ForwardController()));
+        AbstractControllerServlet servlet=new DynamicControllerServlet(new SimpleForwardController());
+        ServletConfig servletConfig = mock(ServletConfig.class);
+        servlet.init(servletConfig);
+        when(mocker.getRequest().getMethod()).thenReturn("GET");
+        when(mocker.getRequest().getRequestDispatcher("/viewForward.jsp")).thenReturn(dispatcher);
+        servlet.service(mocker.getRequest(), mocker.getResponse());
+        verify(dispatcher).forward(mocker.getRequest(), mocker.getResponse());
+    }
+    
+    @Test
+    public void shouldForwardToToo() throws Exception{
+        RequestDispatcher dispatcher=mock(RequestDispatcher.class);
+        AbstractControllerServlet servlet=new TypeSafeControllerServlet(new TypesafeForwardController());
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");
@@ -34,9 +49,19 @@ public class TestForward {
     
     @URL("/any")
     @ForwardTo("/viewForward.jsp")
-    static class ForwardController{
+    public static class SimpleForwardController{
         
         public void doAction(){
+            
+        }
+        
+    }
+    
+    @URL("/any")
+    @ForwardTo("/viewForward.jsp")
+    public static class TypesafeForwardController implements Controller{
+        
+        public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
             
         }
         

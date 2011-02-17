@@ -3,8 +3,10 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
+import carmesi.internal.RequestResponseMocker;
+import carmesi.internal.dynamic.DynamicController;
 import org.junit.Rule;
 import javax.servlet.ServletContext;
 import org.junit.Before;

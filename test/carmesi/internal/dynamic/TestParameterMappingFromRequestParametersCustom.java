@@ -3,10 +3,12 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
+import carmesi.internal.dynamic.DynamicController;
 import java.util.Map;
 import carmesi.RequestBean;
+import carmesi.internal.RequestResponseMocker;
 import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Rule;

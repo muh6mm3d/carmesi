@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
 import org.junit.Rule;
 import org.mockito.ArgumentCaptor;
@@ -11,7 +11,7 @@ import carmesi.ApplicationAttribute;
 import carmesi.CookieValue;
 import carmesi.SessionAttribute;
 import carmesi.RequestAttribute;
-import carmesi.internal.ControllerWrapper.Result;
+import carmesi.internal.RequestResponseMocker;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
@@ -37,8 +37,8 @@ public class TestProcessReturnValues {
             }
         
         });
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         verify(mocker.getRequest()).setAttribute("value", 10);
     }
     
@@ -51,8 +51,7 @@ public class TestProcessReturnValues {
             }
         
         });
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         verify(mocker.getRequest(), never()).setAttribute("value", 10);
     }
     
@@ -66,8 +65,7 @@ public class TestProcessReturnValues {
             }
             
         });
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         verify(mocker.getRequest()).setAttribute("result", 3);
     }
     
@@ -83,8 +81,7 @@ public class TestProcessReturnValues {
             
         });
         when(mocker.getRequest().getSession()).thenReturn(session);
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         verify(session).setAttribute("result", 3);
     }
     
@@ -100,8 +97,7 @@ public class TestProcessReturnValues {
             
         });
         when(mocker.getRequest().getServletContext()).thenReturn(context);
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         verify(context).setAttribute("result", 3);
     }
     
@@ -117,8 +113,7 @@ public class TestProcessReturnValues {
             
         });
         when(mocker.getRequest().getServletContext()).thenReturn(context);
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         ArgumentCaptor<Cookie> argument = ArgumentCaptor.forClass(Cookie.class);
         verify(mocker.getResponse()).addCookie(argument.capture());
         assertThat(argument.getValue().getValue(), is("3"));
@@ -139,8 +134,7 @@ public class TestProcessReturnValues {
             
         });
         when(mocker.getRequest().getServletContext()).thenReturn(context);
-        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
-        result.process();
+        controller.execute(mocker.getRequest(), mocker.getResponse());
         ArgumentCaptor<Cookie> argument = ArgumentCaptor.forClass(Cookie.class);
         verify(mocker.getResponse()).addCookie(argument.capture());
         assertThat(argument.getValue().getValue(), is("3"));
