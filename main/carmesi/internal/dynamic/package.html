@@ -1,0 +1,26 @@
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    Internal classes of Carmesi for dynamic controller.
+    
+    A controller must have exactly one public method. Parameters must obey one of the follow constraints:
+    
+    <ul>
+        <li>Be one of the automatic injectable types: HttpSession, HttpServletRequest, HttpServletResponse, ServletContext.</li>
+        <li>Have one of the attribute annotations: RequestAttribute, SessionAttribute or ApplicacionAttribute</li>
+        <li>Have one of the parameter annotations: RequestParameter, ContextParameter.</li>
+        <li>Annotated with CookieValue.</li>
+        <li>Annotated with RequestBean.</li>
+    </ul>
+    
+    "What about parameters?"
+  </body>
+</html>

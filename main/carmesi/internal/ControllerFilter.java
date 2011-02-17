@@ -5,7 +5,7 @@
 
 package carmesi.internal;
 
-import carmesi.internal.ControllerWrapper.Result;
+import carmesi.Controller;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -22,11 +22,11 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor
  */
-class ControllerFilter implements  Filter{
-    private ControllerWrapper controllerWrapper;
+public class ControllerFilter implements  Filter{
+    private Controller controller;
 
-    public ControllerFilter(ControllerWrapper controller){
-        controllerWrapper=controller;
+    public ControllerFilter(Controller controller) {
+        this.controller = controller;
     }
     
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -36,11 +36,10 @@ class ControllerFilter implements  Filter{
     public void destroy() {
         
     }
-
+    
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
-            Result result = controllerWrapper.execute((HttpServletRequest)request, (HttpServletResponse)response);
-            result.process();
+            controller.execute((HttpServletRequest)request, (HttpServletResponse)response);
             chain.doFilter(request, response);
         } catch (IllegalAccessException ex) {
             throw new ServletException(ex);
@@ -53,7 +52,6 @@ class ControllerFilter implements  Filter{
         } catch (Exception ex) {
             throw new ServletException(ex);
         }
-        
     }
 
 }

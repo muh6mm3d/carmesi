@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
 import java.lang.annotation.Annotation;
 

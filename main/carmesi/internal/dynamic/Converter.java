@@ -1,6 +1,6 @@
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
-interface Converter<T> {
+public interface Converter<T> {
 
     public T convert(String stringValue, TargetInfo info);
     

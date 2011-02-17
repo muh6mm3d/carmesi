@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal;
+package carmesi.internal.dynamic;
 
 import carmesi.HttpMethod;
 import carmesi.RequestParameter;
@@ -11,6 +11,7 @@ import carmesi.RequestAttribute;
 import carmesi.ContextParameter;
 import carmesi.RequestBean;
 import carmesi.ApplicationAttribute;
+import carmesi.Controller;
 import carmesi.SessionAttribute;
 import carmesi.CookieValue;
 import carmesi.ForwardTo;
@@ -35,8 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
@@ -53,7 +52,7 @@ import javax.servlet.http.HttpSession;
  *
  * @author Victor
  */
-class DynamicController implements  ControllerWrapper{
+public class DynamicController implements Controller{
     private Object object;
     private Method method;
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
@@ -78,8 +77,15 @@ class DynamicController implements  ControllerWrapper{
         converters.put(klass, converter);
     }
 
-    public Result execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        return execute(new ExecutionContext(request, response));
+    public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Result result=execute(new ExecutionContext(request, response));
+        result.process();
+    }
+    
+    public Result executeAndGetResult(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        Result result=execute(new ExecutionContext(request, response));
+        result.process();
+        return result;
     }
 
     public String getForwardTo() {
@@ -97,7 +103,7 @@ class DynamicController implements  ControllerWrapper{
         return url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
     }
     
-    public ControllerResult execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
+    protected Result execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Object[] actualParameters=new Object[parameterTypes.length];
@@ -106,7 +112,7 @@ class DynamicController implements  ControllerWrapper{
         for(int i=0; i < parameterTypes.length; i++){
             actualParameters[i]=getActualParameter(new TargetInfo(parameterTypes[i], parameterAnnotations[i]), context);
         }
-        return new ControllerResult(method.invoke(object, actualParameters), method.getReturnType().equals(Void.TYPE), context);
+        return new Result(method.invoke(object, actualParameters), method.getReturnType().equals(Void.TYPE), context);
     }
 
     private Object getActualParameter(TargetInfo parameterInfo, ExecutionContext context) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException {
@@ -261,12 +267,12 @@ class DynamicController implements  ControllerWrapper{
         return new DynamicController(object, methods.get(0));
     }
 
-    public class ControllerResult implements  ControllerWrapper.Result{
+    public class Result{
         private Object value;
         private boolean isVoid;
         private ExecutionContext executionContext;
 
-        private ControllerResult(Object v, boolean b, ExecutionContext context) {
+        private Result(Object v, boolean b, ExecutionContext context) {
             value=v;
             isVoid=b;
             executionContext=context;
@@ -280,7 +286,7 @@ class DynamicController implements  ControllerWrapper{
             return value;
         }
         
-        public void writeToResponse(HttpServletResponse response) throws IOException{
+        protected void writeToResponse(HttpServletResponse response) throws IOException{
             if(!isVoid){
                 Gson gson=new GsonBuilder().create();
                 response.getWriter().println(gson.toJson(value));
@@ -289,7 +295,7 @@ class DynamicController implements  ControllerWrapper{
         
         private Pattern getterPattern=Pattern.compile("get(.+)");
 
-        public void process() {
+        protected void process() {
             if(isVoid){
                 return;
             }else{
