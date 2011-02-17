@@ -306,7 +306,7 @@ class DynamicController implements  ControllerWrapper{
                 }else if(value instanceof Cookie){
                     executionContext.getResponse().addCookie((Cookie) value);
                 }else if(method.isAnnotationPresent(ToJSON.class)){
-                    
+                    //Missing support for JSON
                 }else{
                     if(autoRequestAttribute){
                         Matcher matcher = getterPattern.matcher(method.getName());
