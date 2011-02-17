@@ -21,4 +21,6 @@ public @interface URL {
      */
     String value();
     
+    HttpMethod[] httpMethods() default {};
+    
 }

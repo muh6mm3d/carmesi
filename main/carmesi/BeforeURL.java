@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Before {
+public @interface BeforeURL {
     /**
      * The controller is executed the resource specified by value is served.
      */
