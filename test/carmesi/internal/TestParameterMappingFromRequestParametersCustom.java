@@ -21,13 +21,13 @@ import static org.junit.Assert.*;
 public class TestParameterMappingFromRequestParametersCustom {
     private boolean invoked;
     
+    @Rule
+    public RequestResponseMocker mocker=new RequestResponseMocker();
+    
     @Before
     public void init(){
         invoked=false;
     }
-    
-    @Rule
-    public RequestResponseMocker mocker=new RequestResponseMocker();
     
     @Test
     public void shouldBeInvokedWithBean() throws Exception{

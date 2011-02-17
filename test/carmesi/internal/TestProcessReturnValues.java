@@ -5,7 +5,7 @@
 
 package carmesi.internal;
 
-import carmesi.internal.TestParameterMappingFromRequestParametersCustom.Person;
+import org.junit.Rule;
 import org.mockito.ArgumentCaptor;
 import carmesi.ApplicationAttribute;
 import carmesi.CookieValue;
@@ -14,8 +14,6 @@ import carmesi.RequestAttribute;
 import carmesi.internal.ControllerWrapper.Result;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -27,6 +25,8 @@ import static org.hamcrest.CoreMatchers.*;
  * @author Victor
  */
 public class TestProcessReturnValues {
+    @Rule
+    public RequestResponseMocker mocker=new RequestResponseMocker();
 
     @Test
     public void shouldHaveRequestAttribute() throws Exception{
@@ -37,11 +37,9 @@ public class TestProcessReturnValues {
             }
         
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
-        verify(request).setAttribute("value", 10);
+        verify(mocker.getRequest()).setAttribute("value", 10);
     }
     
     @Test
@@ -53,11 +51,9 @@ public class TestProcessReturnValues {
             }
         
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
-        verify(request, never()).setAttribute("value", 10);
+        verify(mocker.getRequest(), never()).setAttribute("value", 10);
     }
     
     @Test
@@ -70,11 +66,9 @@ public class TestProcessReturnValues {
             }
             
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
-        verify(request).setAttribute("result", 3);
+        verify(mocker.getRequest()).setAttribute("result", 3);
     }
     
     @Test
@@ -88,10 +82,8 @@ public class TestProcessReturnValues {
             }
             
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        when(request.getSession()).thenReturn(session);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        when(mocker.getRequest().getSession()).thenReturn(session);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
         verify(session).setAttribute("result", 3);
     }
@@ -107,10 +99,8 @@ public class TestProcessReturnValues {
             }
             
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        when(request.getServletContext()).thenReturn(context);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        when(mocker.getRequest().getServletContext()).thenReturn(context);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
         verify(context).setAttribute("result", 3);
     }
@@ -126,13 +116,11 @@ public class TestProcessReturnValues {
             }
             
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        when(request.getServletContext()).thenReturn(context);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        when(mocker.getRequest().getServletContext()).thenReturn(context);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
         ArgumentCaptor<Cookie> argument = ArgumentCaptor.forClass(Cookie.class);
-        verify(response).addCookie(argument.capture());
+        verify(mocker.getResponse()).addCookie(argument.capture());
         assertThat(argument.getValue().getValue(), is("3"));
         assertThat(argument.getValue().getName(), is("result"));
         assertThat(argument.getValue().getMaxAge(), is(-1));
@@ -150,13 +138,11 @@ public class TestProcessReturnValues {
             }
             
         });
-        HttpServletRequest request=mock(HttpServletRequest.class);
-        when(request.getServletContext()).thenReturn(context);
-        HttpServletResponse response=mock(HttpServletResponse.class);
-        Result result = controller.execute(request, response);
+        when(mocker.getRequest().getServletContext()).thenReturn(context);
+        Result result = controller.execute(mocker.getRequest(), mocker.getResponse());
         result.process();
         ArgumentCaptor<Cookie> argument = ArgumentCaptor.forClass(Cookie.class);
-        verify(response).addCookie(argument.capture());
+        verify(mocker.getResponse()).addCookie(argument.capture());
         assertThat(argument.getValue().getValue(), is("3"));
         assertThat(argument.getValue().getName(), is("result"));
         assertThat(argument.getValue().getMaxAge(), is(156));
