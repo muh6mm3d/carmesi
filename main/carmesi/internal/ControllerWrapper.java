@@ -5,6 +5,7 @@
 
 package carmesi.internal;
 
+import carmesi.HttpMethod;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +21,8 @@ interface ControllerWrapper {
     String getForwardTo();
     
     String getRedirectTo();
+    
+    HttpMethod[] getHttpMethods();
     
     public static interface  Result{
         

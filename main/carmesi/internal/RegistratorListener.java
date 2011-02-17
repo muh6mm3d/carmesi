@@ -3,7 +3,7 @@
  */
 package carmesi.internal;
 
-import carmesi.Before;
+import carmesi.BeforeURL;
 import carmesi.Controller;
 import carmesi.URL;
 import java.io.BufferedReader;
@@ -78,7 +78,7 @@ public class RegistratorListener implements ServletContextListener {
                 Class<?> klass = Class.forName(line);
                 if (klass.isAnnotationPresent(URL.class)) {
                     addControllerServlet((Class<Object>) klass);
-                } else if (klass.isAnnotationPresent(Before.class)){
+                } else if (klass.isAnnotationPresent(BeforeURL.class)){
                     addControllerFilter((Class<Object>) klass);
                 }
             }
@@ -108,7 +108,7 @@ public class RegistratorListener implements ServletContextListener {
         }
         Filter filter=new ControllerFilter(controllerWrapper);
         FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), filter);
-        Before before = klass.getAnnotation(Before.class);
+        BeforeURL before = klass.getAnnotation(BeforeURL.class);
         EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
         dynamic.addMappingForUrlPatterns(set, false, before.value());
     }

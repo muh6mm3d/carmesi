@@ -7,7 +7,9 @@ package carmesi.internal;
 
 import carmesi.Controller;
 import carmesi.ForwardTo;
+import carmesi.HttpMethod;
 import carmesi.RedirectTo;
+import carmesi.URL;
 import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,6 +53,11 @@ class ControllerAdapter implements  ControllerWrapper{
     public String getRedirectTo() {
         RedirectTo redirectTo = controller.getClass().getAnnotation(RedirectTo.class);
         return redirectTo != null? redirectTo.value() : null;
+    }
+
+    public HttpMethod[] getHttpMethods() {
+        URL url=controller.getClass().getAnnotation(URL.class);
+        return url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
     }
 
 }

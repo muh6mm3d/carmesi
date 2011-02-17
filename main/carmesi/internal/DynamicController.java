@@ -5,6 +5,7 @@
 
 package carmesi.internal;
 
+import carmesi.HttpMethod;
 import carmesi.RequestParameter;
 import carmesi.RequestAttribute;
 import carmesi.ContextParameter;
@@ -14,6 +15,8 @@ import carmesi.SessionAttribute;
 import carmesi.CookieValue;
 import carmesi.ForwardTo;
 import carmesi.RedirectTo;
+import carmesi.ToJSON;
+import carmesi.URL;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.beans.BeanInfo;
@@ -32,6 +35,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
@@ -50,6 +57,8 @@ class DynamicController implements  ControllerWrapper{
     private Object object;
     private Method method;
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
+    private boolean autoRequestAttribute=true;
+    private int defaultCookieMaxAge=-1;
     
     private DynamicController(Object o, Method m){
         object=o;
@@ -64,6 +73,10 @@ class DynamicController implements  ControllerWrapper{
     Object getObject() {
         return object;
     }
+    
+    public void addConverter(Class<?> klass, Converter converter){
+        converters.put(klass, converter);
+    }
 
     public Result execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return execute(new ExecutionContext(request, response));
@@ -77,6 +90,11 @@ class DynamicController implements  ControllerWrapper{
     public String getRedirectTo() {
         RedirectTo redirectTo = object.getClass().getAnnotation(RedirectTo.class);
         return redirectTo != null? redirectTo.value() : null;
+    }
+
+    public HttpMethod[] getHttpMethods() {
+        URL url=object.getClass().getAnnotation(URL.class);
+        return url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
     }
     
     public ControllerResult execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
@@ -165,6 +183,7 @@ class DynamicController implements  ControllerWrapper{
     
     private Object convertStringToType(String string, TargetInfo parameterInfo){
         Class<?> targetType=parameterInfo.getParameterType();
+        Converter<?> converter = converters.get(parameterInfo.getParameterType());
         if(string == null){
             return null;
         }else if(targetType.equals(byte.class) || targetType.equals(Byte.class)){
@@ -187,19 +206,23 @@ class DynamicController implements  ControllerWrapper{
             return Boolean.valueOf(string);
         }else if(targetType.equals(String.class)){
             return string;
+        }else if(converter != null){
+            return converter.convert(string, parameterInfo);
         }else{
-            Converter<?> converter = converters.get(parameterInfo.getParameterType());
-            if(converter != null){
-                return converter.convert(string, parameterInfo);
-            }
-        }
-        return null;
-    }
-    
-    private <A extends Annotation> A getAnnotation(Annotation[]  annotations, Class<A> annotationClass){
-        for(Annotation a: annotations){
-            if(a.annotationType().equals(annotationClass)){
-                return (A) a;
+            Method[] methods = targetType.getDeclaredMethods();
+            for(Method m: methods){
+                if(m.getName().equals("valueOf") && m.getParameterTypes().length == 1 && m.getParameterTypes()[0].equals(String.class)
+                        && m.getReturnType().equals(targetType) && Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers())){
+                    try {
+                        return m.invoke(null, string);
+                    } catch (IllegalAccessException ex) {
+                        throw new AssertionError(ex);
+                    } catch (IllegalArgumentException ex) {
+                        throw new AssertionError(ex);
+                    } catch (InvocationTargetException ex) {
+                        throw new AssertionError(ex);
+                    }
+                }
             }
         }
         return null;
@@ -263,28 +286,36 @@ class DynamicController implements  ControllerWrapper{
                 response.getWriter().println(gson.toJson(value));
             }
         }
+        
+        private Pattern getterPattern=Pattern.compile("get(.+)");
 
         public void process() {
             if(isVoid){
                 return;
             }else{
-                RequestAttribute requestAttribute=getAnnotation(method.getAnnotations(), RequestAttribute.class);
-                if(requestAttribute != null){
-                    executionContext.getRequest().setAttribute(requestAttribute.value(), value);
-                    return;
-                }
-                SessionAttribute sessionAttribute=getAnnotation(method.getAnnotations(), SessionAttribute.class);
-                if(sessionAttribute != null){
-                    executionContext.getRequest().getSession().setAttribute(sessionAttribute.value(), value);
-                    return;
-                }
-                ApplicationAttribute applicationAttribute=getAnnotation(method.getAnnotations(), ApplicationAttribute.class);
-                if(applicationAttribute != null){
-                    executionContext.getRequest().setAttribute(applicationAttribute.value(), value);
-                    return;
-                }
-                if(value instanceof Cookie){
+                if(method.isAnnotationPresent(RequestAttribute.class)){
+                    executionContext.getRequest().setAttribute(method.getAnnotation(RequestAttribute.class).value(), value);
+                }else if(method.isAnnotationPresent(SessionAttribute.class)){
+                    executionContext.getRequest().getSession().setAttribute(method.getAnnotation(SessionAttribute.class).value(), value);
+                }else if(method.isAnnotationPresent(ApplicationAttribute.class)){
+                    executionContext.getServletContext().setAttribute(method.getAnnotation(ApplicationAttribute.class).value(), value);
+                }else if(method.isAnnotationPresent(CookieValue.class)){
+                    Cookie cookie=new Cookie(method.getAnnotation(CookieValue.class).value(), String.valueOf(value));
+                    cookie.setMaxAge(defaultCookieMaxAge);
+                    executionContext.getResponse().addCookie(cookie);
+                }else if(value instanceof Cookie){
                     executionContext.getResponse().addCookie((Cookie) value);
+                }else if(method.isAnnotationPresent(ToJSON.class)){
+                    
+                }else{
+                    if(autoRequestAttribute){
+                        Matcher matcher = getterPattern.matcher(method.getName());
+                        if(matcher.matches()){
+                            StringBuilder builder=new StringBuilder(matcher.group(1));
+                            builder.setCharAt(0, Character.toLowerCase(builder.charAt(0)));
+                            executionContext.getRequest().setAttribute(builder.toString(), value);
+                        }
+                    }
                 }
             }
         }

@@ -4,11 +4,9 @@
 
 package carmesi.internal;
 
-import carmesi.Before;
+import carmesi.BeforeURL;
 import carmesi.URL;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +18,6 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.swing.JOptionPane;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -44,7 +41,7 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
             return false;
         }
         Set<Element> elements=new HashSet<Element>();
-        elements.addAll(roundEnv.getElementsAnnotatedWith(Before.class));
+        elements.addAll(roundEnv.getElementsAnnotatedWith(BeforeURL.class));
         elements.addAll(roundEnv.getElementsAnnotatedWith(URL.class));
         
         Writer writer=null;

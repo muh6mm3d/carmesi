@@ -5,6 +5,7 @@
 
 package carmesi.internal;
 
+import carmesi.HttpMethod;
 import carmesi.internal.ControllerWrapper.Result;
 import java.beans.IntrospectionException;
 import java.io.IOException;
@@ -28,21 +29,30 @@ class ControllerServlet extends  HttpServlet{
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            Result result = wrapper.execute(request, response);
-            if(!result.isVoid()){
-                result.writeToResponse(response);
-            }else{
-                result.process();
-                if(wrapper.getForwardTo() != null){
-                    request.getRequestDispatcher(wrapper.getForwardTo()).forward(request, response);
-                }else if(wrapper.getRedirectTo() != null){
-                    String url=wrapper.getRedirectTo();
-                    if(url.startsWith("//")){
-                        url=url.substring(2);
-                    }else if(url.startsWith("/")){
-                        url=getServletContext().getContextPath()+url;
+            boolean validHttpMethod=false;
+            for(HttpMethod method:wrapper.getHttpMethods()){
+                if(request.getMethod().equals(method.toString())){
+                    validHttpMethod=true;
+                    break;
+                }
+            }
+            if(validHttpMethod){
+                Result result = wrapper.execute(request, response);
+                if(wrapper.getForwardTo() == null && wrapper.getRedirectTo() == null && !result.isVoid()){
+                    result.writeToResponse(response);
+                }else{
+                    result.process();
+                    if(wrapper.getForwardTo() != null){
+                        request.getRequestDispatcher(wrapper.getForwardTo()).forward(request, response);
+                    }else if(wrapper.getRedirectTo() != null){
+                        String url=wrapper.getRedirectTo();
+                        if(url.startsWith("//")){
+                            url=url.substring(2);
+                        }else if(url.startsWith("/")){
+                            url=request.getContextPath()+url;
+                        }
+                        response.sendRedirect(url);
                     }
-                    response.sendRedirect(url);
                 }
             }
         } catch (IllegalAccessException ex) {
