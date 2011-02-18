@@ -1,8 +1,6 @@
-/**
- * Insert license here.
- */
 package carmesi.internal;
 
+import carmesi.jsonserializers.JSONSerializer;
 import carmesi.internal.dynamic.DynamicController;
 import carmesi.BeforeURL;
 import carmesi.Controller;
@@ -12,14 +10,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.LinkedList;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
@@ -49,21 +44,35 @@ public class RegistratorListener implements ServletContextListener {
     public static final String CONFIG_FILE_PATH = "META-INF/controllers.list";
     private ServletContext context;
     
-    private @Inject BeanManager beanManager;
-    private CreationalContext creationalContext;
-    private Collection objects=new LinkedList();
+    private ControllerFactory controllerFactory;
 
     public void contextInitialized(ServletContextEvent sce) {
+        context = sce.getServletContext();
+        try{
+            System.out.println("lookup");
+            new InitialContext().lookup("java:comp/BeanManager");
+            System.out.println("bean manager");
+            controllerFactory=new BeanManagerControllerFactory();
+        }catch(NamingException ex){
+            System.out.println("simple factory");
+            controllerFactory=new SimpleControllerFactory();
+        }
+        controllerFactory.init();
         try {
-            context = sce.getServletContext();
             addClassesFromConfigFile();
-        } catch (Exception ex) {
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        } catch (ClassNotFoundException ex) {
+            throw new RuntimeException(ex);
+        } catch (InstantiationException ex) {
+            throw new RuntimeException(ex);
+        } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
-        disposeObjects();
+        controllerFactory.dispose();
     }
 
     private void addClassesFromConfigFile() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -90,21 +99,51 @@ public class RegistratorListener implements ServletContextListener {
     private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
         AbstractControllerServlet servlet;
         if (Controller.class.isAssignableFrom(klass)) {
-            servlet=new TypeSafeControllerServlet(createObject(klass.asSubclass(Controller.class)));
+            servlet=new TypeSafeControllerServlet(controllerFactory.createController(klass.asSubclass(Controller.class)));
         }else{
-            servlet=new DynamicControllerServlet(createObject(klass));
+            DynamicController dynamicController=DynamicController.createDynamicController(controllerFactory.createController(klass));
+            configureDynamicController(dynamicController);
+            servlet=new DynamicControllerServlet(dynamicController);
         }
         ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), servlet);
         URL url = klass.getAnnotation(URL.class);
         dynamic.addMapping(url.value());
     }
+    
+    private String getParameter(String name, String defaultValue){
+        if(context.getInitParameter(name) != null){
+            return context.getInitParameter(name);
+        }else{
+            return defaultValue;
+        }
+    }
+    
+    private void configureDynamicController(DynamicController controller){
+        try {
+            controller.setAutoRequestAttribute(Boolean.parseBoolean(getParameter("carmesi.requestAttribute.autoGeneration", "true")));
+            controller.setDefaultCookieMaxAge(Integer.parseInt(getParameter("carmesi.cookie.maxAge", "-1")));
+            String jsonSerializerClassname=getParameter("carmesi.json.serializer", "carmesi.jsonserializers.JacksonSerializer");
+            Class<?> serializerKlass = Class.forName(jsonSerializerClassname);
+            if(JSONSerializer.class.isAssignableFrom(serializerKlass)){
+                controller.setJSONSerializer(serializerKlass.asSubclass(JSONSerializer.class).newInstance());
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
         ControllerFilter filter;
         if (Controller.class.isAssignableFrom(klass)) {
-            filter=new ControllerFilter(createObject(klass.asSubclass(Controller.class)));
+            filter=new ControllerFilter(controllerFactory.createController(klass.asSubclass(Controller.class)));
         }else{
-            filter=new ControllerFilter(DynamicController.createDynamicController(createObject(klass)));
+            DynamicController dynamicController = DynamicController.createDynamicController(controllerFactory.createController(klass));
+            configureDynamicController(dynamicController);
+            filter=new ControllerFilter(dynamicController);
         }
         FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), filter);
         BeforeURL before = klass.getAnnotation(BeforeURL.class);
@@ -112,36 +151,4 @@ public class RegistratorListener implements ServletContextListener {
         dynamic.addMappingForUrlPatterns(set, false, before.value());
     }
 
-    public <T extends Object> T createObject(Class<T> klass) throws InstantiationException, IllegalAccessException {
-        T object;
-        if(beanManager != null){
-            AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(klass);
-            InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
-            if(creationalContext == null){
-                creationalContext = beanManager.createCreationalContext(null);
-            }
-            object = target.produce(creationalContext);
-            target.inject(object, creationalContext);
-            target.postConstruct(object);
-            objects.add(target);
-        }else{
-            object=klass.newInstance();
-            objects.add(object);
-        }
-        return object;
-    }
-
-    private void disposeObjects() {
-        for(Object o:objects){
-            if(o instanceof InjectionTarget){
-                InjectionTarget target=(InjectionTarget) o;
-                target.preDestroy(o);
-                target.dispose(o);
-            }
-        }
-        if(creationalContext != null){
-            creationalContext.release();
-        }
-    }
-    
 }
