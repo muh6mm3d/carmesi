@@ -1,7 +1,3 @@
-/**
- * Insert license here.
- */
-
 package carmesi.internal;
 
 import carmesi.BeforeURL;

@@ -1,13 +1,9 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package carmesi;
 
 /**
- *
- * @author Victor
+ * Represent the posible values of http methods.
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
 public enum HttpMethod {
     GET,

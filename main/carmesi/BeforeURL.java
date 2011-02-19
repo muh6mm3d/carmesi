@@ -1,7 +1,3 @@
-/**
- * Insert license here.
- */
-
 package carmesi;
 
 import java.lang.annotation.ElementType;
@@ -21,7 +17,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface BeforeURL {
     /**
-     * The controller is executed the resource specified by value is served.
+     * The controller is executed before the resource specified by value is served.
+     * 
+     * @return url
      */
     String value();
 }

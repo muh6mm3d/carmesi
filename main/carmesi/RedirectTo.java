@@ -1,7 +1,3 @@
-/**
- * Insert license here.
- */
-
 package carmesi;
 
 import java.lang.annotation.Retention;
@@ -16,8 +12,11 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RedirectTo {
+    
     /**
-     * The url to redirect.
+     * The url to redirect after the controller is executed.
+     * 
+     * return String.
      */
     String value();
     

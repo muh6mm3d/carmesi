@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package carmesi.internal;
 
 import carmesi.Controller;
@@ -19,8 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
+ * Filter used for controller marked with BeforeURL. This filter first invoke the controller and later the execution is passed to the filter chain.
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class ControllerFilter implements  Filter{
     private Controller controller;

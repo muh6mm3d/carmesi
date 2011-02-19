@@ -4,7 +4,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-class ExecutionContext {
+/**
+ * Contains the request, response and servlet context to be handled as a Value Object.
+ * 
+ * @author Victor
+ */
+public class ExecutionContext {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private ServletContext servletContext;

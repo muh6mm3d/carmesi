@@ -10,8 +10,11 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ForwardTo {
+    
     /**
-     *  return The url to forward.
+     * The url to forward after the controller is executed.
+     * 
+     * return String.
      */
      String value();
 }

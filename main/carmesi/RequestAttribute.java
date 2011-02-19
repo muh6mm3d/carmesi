@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package carmesi;
 
 import java.lang.annotation.ElementType;
@@ -12,17 +7,19 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Represents an attribute in ServletRequest. If used in parameter, the value of parameter is retrieved from the ServletRequest.
+ * Represents an attribute in ServletRequest. If used in method parameter, the value of parameter is retrieved from the ServletRequest.
  * If used in method, the return value of the method is set in the ServletRequest.
  * </p>
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 public @interface RequestAttribute {
     
     /**
-     * @return Name of the attribute.
+     * Name of the attribute.
+     * 
+     * @return String.
      */
     String value();
 

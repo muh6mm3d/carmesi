@@ -1,9 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-package carmesi;
+package carmesi.convertion;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,14 +8,16 @@ import java.lang.annotation.Target;
 /**
  * Represents a pattern for the conversion of String object to a Date object.
  * 
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface DatePattern {
 
     /**
-     * @return  The date pattern.
+     * The date pattern.
+     * 
+     * @return String.
      */
     String value();
     

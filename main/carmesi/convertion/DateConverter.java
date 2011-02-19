@@ -1,20 +1,16 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package carmesi.convertion;
 
-package carmesi.internal.dynamic;
-
-import carmesi.DatePattern;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- *
- * @author Victor
+ * A conveter for java.util.Date. This converter requires that the target has an annotation DatePattern.
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
-class DateConverter implements  Converter<Date>{
+@ConverterFor(Date.class)
+public class DateConverter implements  Converter<Date>{
 
     public Date convert(String stringValue, TargetInfo info) {
         try{

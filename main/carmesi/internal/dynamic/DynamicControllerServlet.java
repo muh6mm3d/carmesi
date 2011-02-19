@@ -1,21 +1,17 @@
-/*
- */
-
 package carmesi.internal.dynamic;
 
 import carmesi.HttpMethod;
 import carmesi.internal.AbstractControllerServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
- *
- * @author Victor
+ * Supports dynamic controllers.
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
 public class DynamicControllerServlet extends AbstractControllerServlet{
 
-    public DynamicControllerServlet(Object controller) {
-        super(DynamicController.createDynamicController(controller));
+    public DynamicControllerServlet(DynamicController dynamicController) {
+        super(dynamicController);
     }
     
     public String getViewToForward() {

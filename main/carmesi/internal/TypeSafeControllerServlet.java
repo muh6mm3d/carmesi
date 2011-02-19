@@ -1,6 +1,3 @@
-/*
- */
-
 package carmesi.internal;
 
 import carmesi.Controller;
@@ -10,8 +7,9 @@ import carmesi.RedirectTo;
 import carmesi.URL;
 
 /**
- *
- * @author Victor
+ * Supports controllers implementing Controller interface.
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
 final class TypeSafeControllerServlet extends AbstractControllerServlet{
     private Controller controller;

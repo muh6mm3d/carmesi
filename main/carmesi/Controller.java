@@ -1,7 +1,3 @@
-/**
- * Insert license here.
- */
-
 package carmesi;
 
 import javax.servlet.http.HttpServletRequest;

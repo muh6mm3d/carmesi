@@ -1,7 +1,3 @@
-/**
- * Insert license here.
- */
-
 package carmesi;
 
 import java.lang.annotation.Retention;
@@ -14,6 +10,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface URL {
+    
     /**
      * The string url to execute the controller.
      * 
@@ -21,6 +18,10 @@ public @interface URL {
      */
     String value();
     
+    /**
+     * The valid http methods for invocating a controller.
+     * @return 
+     */
     HttpMethod[] httpMethods() default {};
     
 }

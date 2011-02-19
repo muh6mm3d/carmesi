@@ -1,10 +1,8 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package carmesi.internal.dynamic;
 
+import carmesi.convertion.TargetInfo;
+import carmesi.convertion.Converter;
+import carmesi.convertion.DateConverter;
 import carmesi.HttpMethod;
 import carmesi.RequestParameter;
 import carmesi.RequestAttribute;
@@ -18,8 +16,7 @@ import carmesi.ForwardTo;
 import carmesi.RedirectTo;
 import carmesi.ToJSON;
 import carmesi.URL;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import carmesi.jsonserializers.JSONSerializer;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -32,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +47,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
- *
- * @author Victor
+ * Wraps simple annotated POJOS in order to be used as a Controller. Its function is injecting parameters and processing the return value .
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
 public class DynamicController implements Controller{
     private Object object;
@@ -58,25 +57,50 @@ public class DynamicController implements Controller{
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
     private boolean autoRequestAttribute=true;
     private int defaultCookieMaxAge=-1;
+    private JSONSerializer jsonSerializer;
     
     private DynamicController(Object o, Method m){
         object=o;
         method=m;
-        converters.put(Date.class, new DateConverter());
-    }
-
-    Method getMethod() {
-        return method;
-    }
-
-    Object getObject() {
-        return object;
+        addConverter(Date.class, new DateConverter());
     }
     
-    public void addConverter(Class<?> klass, Converter converter){
+    public final <T> void addConverter(Class<T> klass, Converter<T> converter){
         converters.put(klass, converter);
     }
+    
+    public <T> Converter<T> getConverter(Class<T> klass){
+        return converters.get(klass);
+    }
+    
+    public Map<Class, Converter> getConverters(){
+        return new HashMap<Class, Converter>(converters);
+    }
 
+    public boolean isAutoRequestAttribute() {
+        return autoRequestAttribute;
+    }
+
+    public void setAutoRequestAttribute(boolean autoRequestAttribute) {
+        this.autoRequestAttribute = autoRequestAttribute;
+    }
+
+    public int getDefaultCookieMaxAge() {
+        return defaultCookieMaxAge;
+    }
+
+    public void setDefaultCookieMaxAge(int defaultCookieMaxAge) {
+        this.defaultCookieMaxAge = defaultCookieMaxAge;
+    }
+
+    public JSONSerializer getJSONSerializer() {
+        return jsonSerializer;
+    }
+
+    public void setJSONSerializer(JSONSerializer jsonSerializer) {
+        this.jsonSerializer = jsonSerializer;
+    }
+    
     public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
         Result result=execute(new ExecutionContext(request, response));
         result.process();
@@ -117,23 +141,22 @@ public class DynamicController implements Controller{
 
     private Object getActualParameter(TargetInfo parameterInfo, ExecutionContext context) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException {
         /* Definir por tipos */
-        if(parameterInfo.getParameterType().equals(ServletContext.class)){
+        if(parameterInfo.getType().equals(ServletContext.class)){
             return context.getServletContext();
-        }else if(ServletRequest.class.isAssignableFrom(parameterInfo.getParameterType())){
+        }else if(ServletRequest.class.isAssignableFrom(parameterInfo.getType())){
             return context.getRequest();
-        }else if(ServletResponse.class.isAssignableFrom(parameterInfo.getParameterType())){
+        }else if(ServletResponse.class.isAssignableFrom(parameterInfo.getType())){
             return context.getResponse();
-        }else if(HttpSession.class.isAssignableFrom(parameterInfo.getParameterType())){
+        }else if(HttpSession.class.isAssignableFrom(parameterInfo.getType())){
             return context.getRequest().getSession();
         }else{
             /* Definir por anotaciones */
-            RequestBean requestBean=parameterInfo.getAnnotation(RequestBean.class);
-            if(requestBean != null){
-                return fillBeanWithParameters(parameterInfo.getParameterType().newInstance(), context.getRequest());
+            if(parameterInfo.isAnnotationPresent(RequestBean.class)){
+                return fillBeanWithParameters(parameterInfo.getType().newInstance(), context.getRequest());
             }
-            RequestParameter requestParameter=parameterInfo.getAnnotation(RequestParameter.class);
-            if(requestParameter != null){
-                if(parameterInfo.getParameterType().isArray()){
+            if(parameterInfo.isAnnotationPresent(RequestParameter.class)){
+                RequestParameter requestParameter=parameterInfo.getAnnotation(RequestParameter.class);
+                if(parameterInfo.getType().isArray()){
                     String[] parameterValues = context.getRequest().getParameterValues(requestParameter.value());
                     Object array=null;
                     if(parameterValues != null){
@@ -144,29 +167,24 @@ public class DynamicController implements Controller{
                     return convertStringToType(context.getRequest().getParameter(requestParameter.value()), parameterInfo);
                 }
             }
-            RequestAttribute requestAttribute=parameterInfo.getAnnotation(RequestAttribute.class);
-            if(requestAttribute != null){
-                return context.getRequest().getAttribute(requestAttribute.value());
+            if(parameterInfo.isAnnotationPresent(RequestAttribute.class)){
+                return context.getRequest().getAttribute(parameterInfo.getAnnotation(RequestAttribute.class).value());
             }
-            SessionAttribute sessionAttribute=parameterInfo.getAnnotation(SessionAttribute.class);
-            if(sessionAttribute != null){
-                return context.getRequest().getSession().getAttribute(sessionAttribute.value());
+            if(parameterInfo.isAnnotationPresent(SessionAttribute.class)){
+                return context.getRequest().getSession().getAttribute(parameterInfo.getAnnotation(SessionAttribute.class).value());
             }
-            ApplicationAttribute applicationAttribute=parameterInfo.getAnnotation(ApplicationAttribute.class);
-            if(applicationAttribute != null){
-                return context.getServletContext().getAttribute(applicationAttribute.value());
+            if(parameterInfo.isAnnotationPresent(ApplicationAttribute.class)){
+                return context.getServletContext().getAttribute(parameterInfo.getAnnotation(ApplicationAttribute.class).value());
             }
-            ContextParameter contextParameter=parameterInfo.getAnnotation(ContextParameter.class);
-            if(contextParameter != null){
-                return convertStringToType(context.getServletContext().getInitParameter(contextParameter.value()), parameterInfo);
+            if(parameterInfo.isAnnotationPresent(ContextParameter.class)){
+                return convertStringToType(context.getServletContext().getInitParameter(parameterInfo.getAnnotation(ContextParameter.class).value()), parameterInfo);
             }
-            CookieValue cookieValue=parameterInfo.getAnnotation(CookieValue.class);
-            if(cookieValue != null){
+            if(parameterInfo.isAnnotationPresent(CookieValue.class)){
                 Cookie[] cookies = context.getRequest().getCookies();
                 String string=null;
                 if(cookies != null){
                     for(Cookie c:cookies){
-                        if(c.getName().equals(cookieValue.value())){
+                        if(c.getName().equals(parameterInfo.getAnnotation(CookieValue.class).value())){
                             string=c.getValue();
                         }
                     }
@@ -180,16 +198,16 @@ public class DynamicController implements Controller{
     private Object asArray(String[] stringValues, TargetInfo parameterInfo){
         assert stringValues != null;
         assert parameterInfo != null;
-        Object array = Array.newInstance(parameterInfo.getParameterType().getComponentType(), stringValues.length);
+        Object array = Array.newInstance(parameterInfo.getType().getComponentType(), stringValues.length);
         for(int i=0; i < stringValues.length; i++){
-            Array.set(array, i, convertStringToType(stringValues[i], new TargetInfo(parameterInfo.getParameterType().getComponentType(), parameterInfo.getAnnotations())));
+            Array.set(array, i, convertStringToType(stringValues[i], new TargetInfo(parameterInfo.getType().getComponentType(), parameterInfo.getAnnotations())));
         }
         return array;
     }
     
     private Object convertStringToType(String string, TargetInfo parameterInfo){
-        Class<?> targetType=parameterInfo.getParameterType();
-        Converter<?> converter = converters.get(parameterInfo.getParameterType());
+        Class<?> targetType=parameterInfo.getType();
+        Converter<?> converter = converters.get(parameterInfo.getType());
         if(string == null){
             return null;
         }else if(targetType.equals(byte.class) || targetType.equals(Byte.class)){
@@ -286,16 +304,9 @@ public class DynamicController implements Controller{
             return value;
         }
         
-        protected void writeToResponse(HttpServletResponse response) throws IOException{
-            if(!isVoid){
-                Gson gson=new GsonBuilder().create();
-                response.getWriter().println(gson.toJson(value));
-            }
-        }
-        
         private Pattern getterPattern=Pattern.compile("get(.+)");
 
-        protected void process() {
+        protected void process() throws IOException {
             if(isVoid){
                 return;
             }else{
@@ -312,7 +323,9 @@ public class DynamicController implements Controller{
                 }else if(value instanceof Cookie){
                     executionContext.getResponse().addCookie((Cookie) value);
                 }else if(method.isAnnotationPresent(ToJSON.class)){
-                    //Missing support for JSON
+                    if(jsonSerializer != null){
+                        executionContext.getResponse().getWriter().println(jsonSerializer.serialize(value));
+                    }
                 }else{
                     if(autoRequestAttribute){
                         Matcher matcher = getterPattern.matcher(method.getName());

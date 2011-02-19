@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package carmesi.internal;
 
 import carmesi.Controller;
@@ -16,8 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
- * @author Victor
+ * Base class for controllers. Uses Template Design Pattern.
+ * 
+ * @author Victor Hugo Herrera Maldonado
  */
 public abstract class AbstractControllerServlet extends HttpServlet{
     private Controller controller;

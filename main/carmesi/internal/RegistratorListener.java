@@ -5,12 +5,18 @@ import carmesi.internal.dynamic.DynamicController;
 import carmesi.BeforeURL;
 import carmesi.Controller;
 import carmesi.URL;
+import carmesi.convertion.Converter;
+import carmesi.convertion.ConverterFor;
 import carmesi.internal.dynamic.DynamicControllerServlet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.InitialContext;
@@ -41,21 +47,19 @@ import javax.servlet.annotation.WebListener;
 @WebListener
 public class RegistratorListener implements ServletContextListener {
 
-    public static final String CONFIG_FILE_PATH = "META-INF/controllers.list";
+    public static final String CONFIG_FILE_PATH = "META-INF/carmesi.list";
     private ServletContext context;
     
     private ControllerFactory controllerFactory;
+    private Map<Class, Converter> converterMap=new HashMap<Class, Converter>();
 
     public void contextInitialized(ServletContextEvent sce) {
         context = sce.getServletContext();
         try{
-            System.out.println("lookup");
             new InitialContext().lookup("java:comp/BeanManager");
-            System.out.println("bean manager");
-            controllerFactory=new BeanManagerControllerFactory();
+            setControllerFactory(new BeanManagerControllerFactory());
         }catch(NamingException ex){
-            System.out.println("simple factory");
-            controllerFactory=new SimpleControllerFactory();
+            setControllerFactory(new SimpleControllerFactory());
         }
         controllerFactory.init();
         try {
@@ -71,28 +75,55 @@ public class RegistratorListener implements ServletContextListener {
         }
     }
 
+    protected void setControllerFactory(ControllerFactory controllerFactory) {
+        this.controllerFactory = controllerFactory;
+    }
+    
     public void contextDestroyed(ServletContextEvent sce) {
         controllerFactory.dispose();
     }
-
+    
     private void addClassesFromConfigFile() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        InputStream input;
-        input = getClass().getResourceAsStream("/" + CONFIG_FILE_PATH);
-        if (input != null) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.trim().startsWith("#")) {
-                    continue;
-                }
-                Class<?> klass = Class.forName(line);
-                if (klass.isAnnotationPresent(URL.class)) {
-                    addControllerServlet((Class<Object>) klass);
-                } else if (klass.isAnnotationPresent(BeforeURL.class)){
-                    addControllerFilter((Class<Object>) klass);
+        InputStream input = getClass().getResourceAsStream("/" + CONFIG_FILE_PATH);
+        if(input != null){
+            addClasses(input);
+        }
+    }
+
+    private void addClasses(InputStream input) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        String line;
+        Set<Class> controllersURL=new HashSet<Class>();
+        Set<Class> controllersBeforeURL=new HashSet<Class>();
+        while ((line = reader.readLine()) != null) {
+            if (line.trim().startsWith("#")) {
+                continue;
+            }
+            Class klass = Class.forName(line);
+            if (klass.isAnnotationPresent(URL.class)) {
+                controllersURL.add(klass);
+            } else if (klass.isAnnotationPresent(BeforeURL.class)){
+                controllersBeforeURL.add(klass);
+            } else if (klass.isAnnotationPresent(ConverterFor.class)){
+                if(Converter.class.isAssignableFrom(klass)){
+                    addConverter((Class<? extends Converter>) klass);
                 }
             }
-            reader.close();
+        }
+        reader.close();
+        for(Class klass:controllersURL){
+            addControllerServlet((Class<Object>) klass);    
+        }
+        for(Class klass:controllersBeforeURL){
+            addControllerFilter((Class<Object>) klass);
+        }
+    }
+    
+    private String getParameter(String name, String defaultValue){
+        if(context.getInitParameter(name) != null){
+            return context.getInitParameter(name);
+        }else{
+            return defaultValue;
         }
     }
     
@@ -110,32 +141,6 @@ public class RegistratorListener implements ServletContextListener {
         dynamic.addMapping(url.value());
     }
     
-    private String getParameter(String name, String defaultValue){
-        if(context.getInitParameter(name) != null){
-            return context.getInitParameter(name);
-        }else{
-            return defaultValue;
-        }
-    }
-    
-    private void configureDynamicController(DynamicController controller){
-        try {
-            controller.setAutoRequestAttribute(Boolean.parseBoolean(getParameter("carmesi.requestAttribute.autoGeneration", "true")));
-            controller.setDefaultCookieMaxAge(Integer.parseInt(getParameter("carmesi.cookie.maxAge", "-1")));
-            String jsonSerializerClassname=getParameter("carmesi.json.serializer", "carmesi.jsonserializers.JacksonSerializer");
-            Class<?> serializerKlass = Class.forName(jsonSerializerClassname);
-            if(JSONSerializer.class.isAssignableFrom(serializerKlass)){
-                controller.setJSONSerializer(serializerKlass.asSubclass(JSONSerializer.class).newInstance());
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
         ControllerFilter filter;
         if (Controller.class.isAssignableFrom(klass)) {
@@ -149,6 +154,32 @@ public class RegistratorListener implements ServletContextListener {
         BeforeURL before = klass.getAnnotation(BeforeURL.class);
         EnumSet<DispatcherType> set = EnumSet.of(DispatcherType.REQUEST);
         dynamic.addMappingForUrlPatterns(set, false, before.value());
+    }
+    
+    private void configureDynamicController(DynamicController controller){
+        try {
+            controller.setAutoRequestAttribute(Boolean.parseBoolean(getParameter("carmesi.requestAttribute.autoGeneration", "true")));
+            controller.setDefaultCookieMaxAge(Integer.parseInt(getParameter("carmesi.cookie.maxAge", "-1")));
+            String jsonSerializerClassname=getParameter("carmesi.json.serializer", "carmesi.jsonserializers.JacksonSerializer");
+            Class<?> serializerKlass = Class.forName(jsonSerializerClassname);
+            if(JSONSerializer.class.isAssignableFrom(serializerKlass)){
+                controller.setJSONSerializer(serializerKlass.asSubclass(JSONSerializer.class).newInstance());
+            }
+            for(Map.Entry<Class, Converter> entry:converterMap.entrySet()){
+                controller.addConverter(entry.getKey(), entry.getValue());
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void addConverter(Class<? extends Converter> klass) throws InstantiationException, IllegalAccessException{
+        Converter converter=klass.newInstance();
+        converterMap.put(klass.getAnnotation(ConverterFor.class).value(), converter);
     }
 
 }

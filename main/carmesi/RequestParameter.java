@@ -1,8 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package carmesi;
 
 import java.lang.annotation.ElementType;
@@ -13,14 +8,16 @@ import java.lang.annotation.Target;
 /**
  * Represents a value to be retrieved from a parameter of the request.
  * 
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface RequestParameter {
     
     /**
-     * @return Name of the parameter.
+     * Name of the parameter
+     * 
+     * @return String.
      */
     String value();
 
