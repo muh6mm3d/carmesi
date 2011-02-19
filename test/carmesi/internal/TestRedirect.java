@@ -5,7 +5,6 @@ package carmesi.internal;
 
 import carmesi.Controller;
 import carmesi.internal.dynamic.DynamicController;
-import carmesi.HttpMethod;
 import carmesi.URL;
 import carmesi.RedirectTo;
 import carmesi.internal.dynamic.DynamicControllerServlet;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.*;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class TestRedirect {
     @Rule
@@ -26,7 +25,7 @@ public class TestRedirect {
     
     @Test
     public void shouldRedirect() throws Exception{
-        AbstractControllerServlet servlet=new DynamicControllerServlet(new SimpleRedirectController());
+        AbstractControllerServlet servlet=new DynamicControllerServlet(DynamicController.createDynamicController(new SimpleRedirectController()));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");

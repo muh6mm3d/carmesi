@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class RequestResponseMocker implements MethodRule {
     private HttpServletRequest request;

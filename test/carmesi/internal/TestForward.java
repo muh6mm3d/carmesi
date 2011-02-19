@@ -3,6 +3,7 @@
 
 package carmesi.internal;
 
+import carmesi.internal.dynamic.DynamicController;
 import carmesi.Controller;
 import carmesi.URL;
 import javax.servlet.ServletConfig;
@@ -17,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class TestForward {
     @Rule
@@ -26,7 +27,7 @@ public class TestForward {
     @Test
     public void shouldForwardTo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        AbstractControllerServlet servlet=new DynamicControllerServlet(new SimpleForwardController());
+        AbstractControllerServlet servlet=new DynamicControllerServlet(DynamicController.createDynamicController(new SimpleForwardController()));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");

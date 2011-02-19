@@ -22,7 +22,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class TestProcessReturnValues {
     @Rule

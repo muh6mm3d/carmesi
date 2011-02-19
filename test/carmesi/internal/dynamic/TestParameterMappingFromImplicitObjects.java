@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class TestParameterMappingFromImplicitObjects {
     private boolean invoked;

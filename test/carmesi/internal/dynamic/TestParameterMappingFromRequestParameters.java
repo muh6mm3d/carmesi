@@ -5,11 +5,11 @@
 
 package carmesi.internal.dynamic;
 
-import carmesi.internal.dynamic.TargetInfo;
+import carmesi.convertion.TargetInfo;
 import carmesi.internal.dynamic.DynamicController;
-import carmesi.internal.dynamic.Converter;
+import carmesi.convertion.Converter;
 import java.lang.annotation.RetentionPolicy;
-import carmesi.DatePattern;
+import carmesi.convertion.DatePattern;
 import java.util.Date;
 import org.junit.Rule;
 import carmesi.RequestParameter;
@@ -24,7 +24,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class TestParameterMappingFromRequestParameters {
     private boolean invoked;
