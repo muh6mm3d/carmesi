@@ -2,6 +2,7 @@ package carmesi.internal;
 
 import carmesi.BeforeURL;
 import carmesi.URL;
+import carmesi.convertion.ConverterFor;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashSet;
@@ -39,7 +40,7 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
         Set<Element> elements=new HashSet<Element>();
         elements.addAll(roundEnv.getElementsAnnotatedWith(BeforeURL.class));
         elements.addAll(roundEnv.getElementsAnnotatedWith(URL.class));
-        
+        elements.addAll(roundEnv.getElementsAnnotatedWith(ConverterFor.class));
         Writer writer=null;
         try{
             for(Element e:elements){
