@@ -26,11 +26,11 @@ public abstract class AbstractControllerServlet extends HttpServlet{
         return controller;
     }
     
-    public abstract HttpMethod[] getValidMethods();
+    protected abstract HttpMethod[] getValidMethods();
     
-    public abstract String getViewToForward();
+    protected abstract String getViewToForward();
     
-    public abstract String getViewToRedirect();
+    protected abstract String getViewToRedirect();
     
     private void validateHttpMethod(HttpServletRequest request) throws ServletException{
         boolean validHttpMethod=false;
