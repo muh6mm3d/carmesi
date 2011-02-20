@@ -25,6 +25,10 @@ public class ControllerFilter implements  Filter{
         this.controller = controller;
     }
     
+    public Controller getController(){
+        return controller;
+    }
+    
     public void init(FilterConfig filterConfig) throws ServletException {
         
     }
