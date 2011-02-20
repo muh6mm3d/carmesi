@@ -5,7 +5,7 @@ import java.io.StringWriter;
 import org.codehaus.jackson.map.ObjectMapper;
 
 /**
- * Serialize an object to its JSON representation using Jackson library.
+ * Serialize an object to its JSON representation using Jackson library. Be sure of adding the Jackson library to your project.
  *
  * @author Victor Hugo Herrera Maldonado
  */
