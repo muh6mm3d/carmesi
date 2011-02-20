@@ -14,15 +14,15 @@ public class DynamicControllerServlet extends AbstractControllerServlet{
         super(dynamicController);
     }
     
-    public String getViewToForward() {
+    protected final String getViewToForward() {
         return ((DynamicController)getController()).getForwardTo();
     }
 
-    public String getViewToRedirect() {
+    protected final String getViewToRedirect() {
         return ((DynamicController)getController()).getRedirectTo();
     }
 
-    public HttpMethod[] getValidMethods() {
+    protected final HttpMethod[] getValidMethods() {
         return ((DynamicController)getController()).getHttpMethods();
     }
     
