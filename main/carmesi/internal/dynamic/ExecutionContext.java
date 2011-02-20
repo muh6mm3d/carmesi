@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Contains the request, response and servlet context to be handled as a Value Object.
+ * Simple bean containing the request, response and servlet context.
  * 
  * @author Victor
  */

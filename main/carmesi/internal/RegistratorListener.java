@@ -32,7 +32,7 @@ import javax.servlet.annotation.WebListener;
 
 /**
  *
- * Register the CarmesiFilter and CarmesiServlet with the controllers specified in the config file.
+ * Register the filters servlets for the controllers specified in config resources.
  * <p>
  * The config file is a simple text containing a list of full class name of the controllers. Each class name is specified in a separate line.
  * If a line is empty or starts with a '#' symbol is skipped.
@@ -111,6 +111,7 @@ public class RegistratorListener implements ServletContextListener {
                 if (line.trim().startsWith("#")) {
                     continue;
                 }
+                System.out.println("line: "+line);
                 Class klass = Class.forName(getBinaryClassname(line));
                 if (klass.isAnnotationPresent(URL.class)) {
                     controllersURL.add(klass);

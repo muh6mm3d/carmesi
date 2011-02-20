@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Base class for controllers. Uses Template Design Pattern.
+ * Base Servlet class for controllers annotated with URL. Uses Template Design Pattern.
  * 
  * @author Victor Hugo Herrera Maldonado
  */

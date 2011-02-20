@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Represents a pattern for the conversion of String object to a Date object.
+ * Represents a pattern for the conversion of String object to a Date object (Example: dd/MM/yyyy).
  * 
  * @author Victor Hugo Herrera Maldonado
  */
