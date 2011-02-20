@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,18 +53,34 @@ public class RegistratorListener implements ServletContextListener {
     
     private ControllerFactory controllerFactory;
     private Map<Class, Converter> converterMap=new HashMap<Class, Converter>();
+    private Set<java.net.URL> configResources=new HashSet<java.net.URL>();
 
+    public RegistratorListener(ControllerFactory factory, java.net.URL... configResources) {
+        setControllerFactory(factory);
+        this.configResources.addAll(Arrays.asList(configResources));
+    }
+
+    public RegistratorListener() {
+        
+    }
+    
     public void contextInitialized(ServletContextEvent sce) {
         context = sce.getServletContext();
-        try{
-            new InitialContext().lookup("java:comp/BeanManager");
-            setControllerFactory(new BeanManagerControllerFactory());
-        }catch(NamingException ex){
-            setControllerFactory(new SimpleControllerFactory());
+        if(controllerFactory == null){
+            try{
+                new InitialContext().lookup("java:comp/BeanManager");
+                setControllerFactory(new BeanManagerControllerFactory());
+            }catch(NamingException ex){
+                setControllerFactory(new SimpleControllerFactory());
+            }
         }
         controllerFactory.init();
+        java.net.URL defaultConfigResource = getClass().getResource("/" + CONFIG_FILE_PATH);
+        if(defaultConfigResource != null){
+            configResources.add(defaultConfigResource);
+        }
         try {
-            addClassesFromConfigFile();
+            addClassesFromConfigResources();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         } catch (ClassNotFoundException ex) {
@@ -75,7 +92,7 @@ public class RegistratorListener implements ServletContextListener {
         }
     }
 
-    protected void setControllerFactory(ControllerFactory controllerFactory) {
+    private void setControllerFactory(ControllerFactory controllerFactory) {
         this.controllerFactory = controllerFactory;
     }
     
@@ -83,34 +100,31 @@ public class RegistratorListener implements ServletContextListener {
         controllerFactory.dispose();
     }
     
-    private void addClassesFromConfigFile() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        InputStream input = getClass().getResourceAsStream("/" + CONFIG_FILE_PATH);
-        if(input != null){
-            addClasses(input);
-        }
-    }
-
-    private void addClasses(InputStream input) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        String line;
+    private void addClassesFromConfigResources() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         Set<Class> controllersURL=new HashSet<Class>();
         Set<Class> controllersBeforeURL=new HashSet<Class>();
-        while ((line = reader.readLine()) != null) {
-            if (line.trim().startsWith("#")) {
-                continue;
-            }
-            Class klass = Class.forName(line);
-            if (klass.isAnnotationPresent(URL.class)) {
-                controllersURL.add(klass);
-            } else if (klass.isAnnotationPresent(BeforeURL.class)){
-                controllersBeforeURL.add(klass);
-            } else if (klass.isAnnotationPresent(ConverterFor.class)){
-                if(Converter.class.isAssignableFrom(klass)){
-                    addConverter((Class<? extends Converter>) klass);
+        for(java.net.URL url:configResources){
+            InputStream input=url.openStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().startsWith("#")) {
+                    continue;
+                }
+                Class klass = Class.forName(getBinaryClassname(line));
+                if (klass.isAnnotationPresent(URL.class)) {
+                    controllersURL.add(klass);
+                } else if (klass.isAnnotationPresent(BeforeURL.class)){
+                    controllersBeforeURL.add(klass);
+                } else if (klass.isAnnotationPresent(ConverterFor.class)){
+                    if(Converter.class.isAssignableFrom(klass)){
+                        addConverter((Class<? extends Converter>) klass);
+                    }
                 }
             }
+            reader.close();
+            
         }
-        reader.close();
         for(Class klass:controllersURL){
             addControllerServlet((Class<Object>) klass);    
         }
@@ -118,7 +132,7 @@ public class RegistratorListener implements ServletContextListener {
             addControllerFilter((Class<Object>) klass);
         }
     }
-    
+
     private String getParameter(String name, String defaultValue){
         if(context.getInitParameter(name) != null){
             return context.getInitParameter(name);
@@ -182,4 +196,21 @@ public class RegistratorListener implements ServletContextListener {
         converterMap.put(klass.getAnnotation(ConverterFor.class).value(), converter);
     }
 
+    private String getBinaryClassname(String canonicalClassname) {
+        String[] parts=canonicalClassname.split("\\.");
+        boolean couldBeNestedClass=false;
+        StringBuilder builder=new StringBuilder();
+        for(String part:parts){
+            if(builder.length() > 0){
+                builder.append(couldBeNestedClass? '$': '.');
+            }
+            builder.append(part);
+            if(!couldBeNestedClass && Character.isUpperCase(part.charAt(0))){
+                couldBeNestedClass=true;
+            }
+        }
+        return builder.toString();
+    }
+
 }
+
