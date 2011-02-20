@@ -17,7 +17,7 @@ import static org.hamcrest.CoreMatchers.*;
 public class GsonSerializerTest {
 
     @Test
-    public void testSerialize() {
+    public void shouldBeSameObjectFromSerialization() {
         GsonSerializer serializer=new GsonSerializer();
         A a=new A("x", 9, new C("y"));
         String jsonString = serializer.serialize(a);

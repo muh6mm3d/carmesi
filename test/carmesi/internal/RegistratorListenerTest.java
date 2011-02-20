@@ -47,7 +47,7 @@ public class RegistratorListenerTest {
     }
 
     @Test
-    public void testCreateControllers() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException{
+    public void shouldCreateControllers() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException{
         File file=folder.newFile("carmesi.list");
         BufferedWriter writer=new BufferedWriter(new FileWriter(file));
         Class classes[]={TypesafeController.class, TypesafeControllerBefore.class, MyDynamicController.class, MyDynamicControllerBefore.class, MyConverter.class};

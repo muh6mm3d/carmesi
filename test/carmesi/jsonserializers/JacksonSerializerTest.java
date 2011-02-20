@@ -17,7 +17,7 @@ import static org.hamcrest.CoreMatchers.*;
 public class JacksonSerializerTest {
 
     @Test
-    public void testSerialize() throws IOException {
+    public void shouldBeSameObjectFromSerialization() throws IOException {
         JacksonSerializer serializer=new JacksonSerializer();
         B b1=new B("Victor", "Herrera", 29, new D("d"));
         String jsonString = serializer.serialize(b1);
