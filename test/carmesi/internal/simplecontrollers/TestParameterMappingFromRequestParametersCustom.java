@@ -3,9 +3,9 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import java.util.Map;
 import carmesi.RequestBean;
 import carmesi.internal.RequestResponseMocker;
@@ -33,7 +33,7 @@ public class TestParameterMappingFromRequestParametersCustom {
     
     @Test
     public void shouldBeInvokedWithBean() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestBean Person p){
                assertThat(p.getId(), is("t"));
@@ -54,7 +54,7 @@ public class TestParameterMappingFromRequestParametersCustom {
     
     @Test
     public void shouldBeInvokedWithBeanToo() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestBean Person2 p){
                assertThat(p.getId(), is("t"));

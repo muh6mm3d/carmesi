@@ -15,7 +15,7 @@ import carmesi.URL;
 import carmesi.convert.Converter;
 import carmesi.convert.ConverterFor;
 import carmesi.convert.TargetInfo;
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import java.awt.Point;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,7 +49,7 @@ public class RegistratorListenerTest {
     public void shouldCreateControllers() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException{
         File file=folder.newFile("carmesi.list");
         BufferedWriter writer=new BufferedWriter(new FileWriter(file));
-        Class classes[]={TypesafeController.class, TypesafeControllerBefore.class, MyDynamicController.class, MyDynamicControllerBefore.class, MyConverter.class};
+        Class classes[]={TypesafeController.class, TypesafeControllerBefore.class, SimpleController.class, SimpleControllerBefore.class, MyConverter.class};
         List<ControllerInfo> infos=new LinkedList<ControllerInfo>();
         for(Class c:classes){
             writer.write(c.getCanonicalName());
@@ -77,11 +77,11 @@ public class RegistratorListenerTest {
         
 //        verify(servletContext, times(2)).addServlet(anyString(), (Servlet)any());
 //        verify(servletContext, times(2)).addFilter(anyString(), (Filter)any());
-        verify(servletContext).addServlet(eq(MyDynamicController.class.getSimpleName()), servletCaptor.capture());
-        verify(servletContext).addFilter(eq(MyDynamicControllerBefore.class.getSimpleName()), filterCaptor.capture());
+        verify(servletContext).addServlet(eq(SimpleController.class.getSimpleName()), servletCaptor.capture());
+        verify(servletContext).addFilter(eq(SimpleControllerBefore.class.getSimpleName()), filterCaptor.capture());
         
-        DynamicController controller=(DynamicController) servletCaptor.getValue().getController();
-        DynamicController controllerBefore=(DynamicController) filterCaptor.getValue().getController();
+        SimpleControllerWrapper controller=(SimpleControllerWrapper) servletCaptor.getValue().getController();
+        SimpleControllerWrapper controllerBefore=(SimpleControllerWrapper) filterCaptor.getValue().getController();
         
         assertThat(controller.getConverter(Point.class), is(MyConverter.class));
         assertThat(controllerBefore.getConverter(Point.class), is(MyConverter.class));
@@ -147,9 +147,9 @@ public class RegistratorListenerTest {
         
     }
     
-    @URL("/dynamic")
-    @RedirectTo("/dynamicView.jsp")
-    public static class MyDynamicController{
+    @URL("/simple")
+    @RedirectTo("/simpleView.jsp")
+    public static class SimpleController{
 
         public void doAction(){
             
@@ -157,8 +157,8 @@ public class RegistratorListenerTest {
         
     }
     
-    @BeforeURL("/dynamicBefore")
-    public static class MyDynamicControllerBefore{
+    @BeforeURL("/simpleBefore")
+    public static class SimpleControllerBefore{
 
         public void doAction(){
             

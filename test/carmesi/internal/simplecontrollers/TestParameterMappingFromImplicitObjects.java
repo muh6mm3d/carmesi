@@ -3,10 +3,10 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
 import carmesi.internal.RequestResponseMocker;
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import org.junit.Rule;
 import javax.servlet.ServletContext;
 import org.junit.Before;
@@ -35,7 +35,7 @@ public class TestParameterMappingFromImplicitObjects {
     
     @Test
     public void shouldBeInvokedWithRequest() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(HttpServletRequest r){
                 invoked=true;
@@ -49,7 +49,7 @@ public class TestParameterMappingFromImplicitObjects {
     
     @Test
     public void shouldBeInvokedWithResponse() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(HttpServletResponse r){
                 invoked=true;
@@ -65,7 +65,7 @@ public class TestParameterMappingFromImplicitObjects {
     public void shouldBeInvokedWithSession() throws Exception{
         final HttpSession session=mock(HttpSession.class);
         when(mocker.getRequest().getSession()).thenReturn(session);
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(HttpSession s){
                 invoked=true;
@@ -81,7 +81,7 @@ public class TestParameterMappingFromImplicitObjects {
     public void shouldBeInvokedWithContext() throws Exception{
         final ServletContext context=mock(ServletContext.class);
         when(mocker.getRequest().getServletContext()).thenReturn(context);
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(ServletContext c){
                 invoked=true;

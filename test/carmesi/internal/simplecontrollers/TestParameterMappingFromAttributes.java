@@ -1,6 +1,6 @@
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import org.junit.Rule;
 import org.junit.Before;
 import carmesi.ApplicationAttribute;
@@ -33,7 +33,7 @@ public class TestParameterMappingFromAttributes {
     
     @Test
     public void shouldHaveRequestAttribute() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestAttribute("number") int number){
                 assertThat(number, is(8));
@@ -49,7 +49,7 @@ public class TestParameterMappingFromAttributes {
     
     @Test
     public void shouldHaveSessionAttribute() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@SessionAttribute("number") int number){
                 assertThat(number, is(8));
@@ -67,7 +67,7 @@ public class TestParameterMappingFromAttributes {
     
     @Test
     public void shouldHaveApplicationAttribute() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@ApplicationAttribute("number") int number){
                 assertThat(number, is(8));

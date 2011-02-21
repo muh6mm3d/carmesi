@@ -1,8 +1,9 @@
 /*
  */
 
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.jsonserializers.JSONSerializer;
 import java.io.PrintWriter;
 import carmesi.ToJSON;
@@ -21,7 +22,7 @@ public class TestToJSON {
     
     @Test
     public void shouldReturnJSON() throws Exception{
-        DynamicController dynamicController=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper simpleController=SimpleControllerWrapper.createInstance(new Object(){
             
             @ToJSON
             public A getA(){
@@ -30,11 +31,11 @@ public class TestToJSON {
             
         });
         JSONSerializer serializer=mock(JSONSerializer.class);
-        dynamicController.setJSONSerializer(serializer);
+        simpleController.setJSONSerializer(serializer);
         when(serializer.serialize(new A("x"))).thenReturn("{a:'x'}");
         PrintWriter writer=mock(PrintWriter.class);
         when(mocker.getResponse().getWriter()).thenReturn(writer);
-        dynamicController.execute(mocker.getRequest(), mocker.getResponse());
+        simpleController.execute(mocker.getRequest(), mocker.getResponse());
         
         verify(serializer, times(1)).serialize(new A("x"));
         verify(writer).println("{a:'x'}");

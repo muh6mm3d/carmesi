@@ -5,7 +5,7 @@ package carmesi.internal;
 
 import carmesi.Controller;
 import carmesi.HttpMethod;
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.URL;
 import carmesi.RedirectTo;
 import javax.servlet.ServletConfig;
@@ -25,7 +25,7 @@ public class TestRedirect {
     
     @Test
     public void shouldRedirect() throws Exception{
-        ControllerServlet servlet=ControllerServlet.createInstanceWithRedirect(DynamicController.createDynamicController(new SimpleRedirectController()), "/viewRedirect.jsp", HttpMethod.values());
+        ControllerServlet servlet=ControllerServlet.createInstanceWithRedirect(SimpleControllerWrapper.createInstance(new SimpleRedirectController()), "/viewRedirect.jsp", HttpMethod.values());
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");

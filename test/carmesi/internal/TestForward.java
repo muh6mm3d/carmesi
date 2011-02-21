@@ -3,7 +3,7 @@
 
 package carmesi.internal;
 
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.Controller;
 import carmesi.URL;
 import javax.servlet.ServletConfig;
@@ -27,8 +27,7 @@ public class TestForward {
     @Test
     public void shouldForwardTo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        ControllerServlet servlet=ControllerServlet.createInstanceWithForward(DynamicController.createDynamicController(new SimpleForwardController()), "/viewForward.jsp", HttpMethod.values());
-//                new DynamicControllerServlet(DynamicController.createDynamicController(new SimpleForwardController()));
+        ControllerServlet servlet=ControllerServlet.createInstanceWithForward(SimpleControllerWrapper.createInstance(new SimpleForwardController()), "/viewForward.jsp", HttpMethod.values());
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");

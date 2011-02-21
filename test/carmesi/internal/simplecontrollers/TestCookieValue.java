@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.CookieValue;
 import carmesi.convert.DatePattern;
 import carmesi.internal.RequestResponseMocker;
@@ -33,7 +34,7 @@ public class TestCookieValue {
     public void shouldConvertFromAndToCookie() throws Exception{
         final String stringDate="01.12.2010";
         final SimpleDateFormat format=new SimpleDateFormat("dd.MM.yyyy");
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @CookieValue("date2") @DatePattern("dd.MM.yyyy")
             public Date doAction(@CookieValue("date") @DatePattern("dd.MM.yyyy") Date date){
@@ -62,7 +63,7 @@ public class TestCookieValue {
     @Test
     public void shouldConvertFromAndToCookieToo() throws Exception{
         final String stringA="whatever";
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @CookieValue("result")
             public A doAction(@CookieValue("date") @DatePattern("dd.MM.yyyy") A a){

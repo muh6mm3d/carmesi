@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.convert.TargetInfo;
 import carmesi.convert.Converter;
 import java.lang.annotation.RetentionPolicy;
@@ -38,7 +39,7 @@ public class TestParameterMappingFromRequestParameters {
     
     @Test
     public void shouldBeInvokedWithIntFromRequestParameter() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestParameter("number") int number){
                 assertThat(number, is(3));
@@ -53,7 +54,7 @@ public class TestParameterMappingFromRequestParameters {
     
     @Test
     public void shouldBeInvokedWithStringFromRequestParameter() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestParameter("string") String string){
                 assertThat(string, is("xyz"));
@@ -68,7 +69,7 @@ public class TestParameterMappingFromRequestParameters {
     
     @Test
     public void shouldBeInvokedWithArrayFromRequestParameter() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestParameter("array") long[] array){
                 assertThat(array.length, is(3));
@@ -86,7 +87,7 @@ public class TestParameterMappingFromRequestParameters {
     
     @Test
     public void shouldBeInvokedWithCustomClassFromRequestParameter() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestParameter("custom") MyClass object){
                 assertThat(object.getString(), is("xyz"));
@@ -101,7 +102,7 @@ public class TestParameterMappingFromRequestParameters {
     
     @Test
     public void shouldBeInvokedWithDateRequestParameter() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestParameter("custom") @DatePattern("dd/MM/yyyy") Date date){
                 SimpleDateFormat format=new SimpleDateFormat("yyyy-MM-dd");
@@ -117,7 +118,7 @@ public class TestParameterMappingFromRequestParameters {
     
     @Test
     public void shouldBeInvokedWithCustomConverterRequestParameter() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public void doAction(@RequestParameter("custom") @MyAnnotation1 @MyAnnotation2 MyClass o){
                 assertThat(o.getString(), is("qwerty"));

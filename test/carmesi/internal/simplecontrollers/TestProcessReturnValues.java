@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import org.junit.Rule;
 import org.mockito.ArgumentCaptor;
 import carmesi.ApplicationAttribute;
@@ -30,7 +31,7 @@ public class TestProcessReturnValues {
 
     @Test
     public void shouldHaveRequestAttribute() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
         
             public int getValue(){
                 return 10;
@@ -44,7 +45,7 @@ public class TestProcessReturnValues {
     
     @Test
     public void shouldNotHaveRequestAttribute() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
         
             public int value(){
                 return 10;
@@ -57,7 +58,7 @@ public class TestProcessReturnValues {
     
     @Test
     public void shouldHaveRequestAttributeToo() throws Exception{
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @RequestAttribute("result")
             public int sum(){
@@ -72,7 +73,7 @@ public class TestProcessReturnValues {
     @Test
     public void shouldHaveSessionAttribute() throws Exception{
         HttpSession session=mock(HttpSession.class);
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @SessionAttribute("result")
             public int sum(){
@@ -88,7 +89,7 @@ public class TestProcessReturnValues {
     @Test
     public void shouldHaveApplicationAttribute() throws Exception{
         ServletContext context=mock(ServletContext.class);
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @ApplicationAttribute("result")
             public int sum(){
@@ -104,7 +105,7 @@ public class TestProcessReturnValues {
     @Test
     public void shouldHaveCookie() throws Exception{
         ServletContext context=mock(ServletContext.class);
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @CookieValue("result")
             public int sum(){
@@ -124,7 +125,7 @@ public class TestProcessReturnValues {
     @Test
     public void shouldHaveCookieToo() throws Exception{
         ServletContext context=mock(ServletContext.class);
-        DynamicController controller=DynamicController.createDynamicController(new Object(){
+        SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             public Cookie sum(){
                 Cookie cookie = new Cookie("result", String.valueOf(1+2));
