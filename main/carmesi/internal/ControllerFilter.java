@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Victor Hugo Herrera Maldonado
  */
-public class ControllerFilter implements  Filter{
+class ControllerFilter implements  Filter{
     private Controller controller;
 
     public ControllerFilter(Controller controller) {

@@ -2,7 +2,7 @@ package carmesi.internal;
 
 import carmesi.BeforeURL;
 import carmesi.URL;
-import carmesi.convertion.ConverterFor;
+import carmesi.convert.ConverterFor;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashSet;
@@ -25,7 +25,7 @@ import javax.tools.StandardLocation;
  * See the help of your IDE for configuring the processor. If you do manual compilation, see (TODO javac annotation configuration link).
  *
  * @author Victor Hugo Herrera Maldonado
- * @see RegistratorListener
+ * @see CarmesiInitializer
  */
 @SupportedAnnotationTypes("carmesi.*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
@@ -33,7 +33,7 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
     private Set<String> classNames=new TreeSet<String>();
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    public final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if(annotations.isEmpty()){
             return false;
         }
@@ -68,7 +68,7 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
     
     private void writeConfigFile() throws IOException{
         Writer writer=null;
-        FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", RegistratorListener.CONFIG_FILE_PATH, new Element[]{});
+        FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", CarmesiInitializer.CONFIG_FILE_PATH, new Element[]{});
         writer=resource.openWriter();
         for(String className:classNames){
             writer.write(className);

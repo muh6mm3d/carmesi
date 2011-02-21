@@ -4,10 +4,12 @@ import carmesi.jsonserializers.JSONSerializer;
 import carmesi.internal.dynamic.DynamicController;
 import carmesi.BeforeURL;
 import carmesi.Controller;
+import carmesi.ForwardTo;
+import carmesi.HttpMethod;
+import carmesi.RedirectTo;
 import carmesi.URL;
-import carmesi.convertion.Converter;
-import carmesi.convertion.ConverterFor;
-import carmesi.internal.dynamic.DynamicControllerServlet;
+import carmesi.convert.Converter;
+import carmesi.convert.ConverterFor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +34,7 @@ import javax.servlet.annotation.WebListener;
 
 /**
  *
- * Register the filters servlets for the controllers specified in config resources.
+ * ServletContextListener implementation to add the servlets and filter for executing the controllers specified in config resources.
  * <p>
  * The config file is a simple text containing a list of full class name of the controllers. Each class name is specified in a separate line.
  * If a line is empty or starts with a '#' symbol is skipped.
@@ -46,7 +48,7 @@ import javax.servlet.annotation.WebListener;
  * @author Victor Hugo Herrera Maldonado
  */
 @WebListener
-public class RegistratorListener implements ServletContextListener {
+public class CarmesiInitializer implements ServletContextListener {
 
     public static final String CONFIG_FILE_PATH = "META-INF/carmesi.list";
     private ServletContext context;
@@ -55,21 +57,21 @@ public class RegistratorListener implements ServletContextListener {
     private Map<Class, Converter> converterMap=new HashMap<Class, Converter>();
     private Set<java.net.URL> configResources=new HashSet<java.net.URL>();
 
-    public RegistratorListener(ControllerFactory factory, java.net.URL... configResources) {
+    CarmesiInitializer(ControllerFactory factory, java.net.URL... configResources) {
         setControllerFactory(factory);
         this.configResources.addAll(Arrays.asList(configResources));
     }
 
-    public RegistratorListener() {
+    public CarmesiInitializer() {
         
     }
     
-    public void contextInitialized(ServletContextEvent sce) {
+    public final void contextInitialized(ServletContextEvent sce) {
         context = sce.getServletContext();
         if(controllerFactory == null){
             try{
                 new InitialContext().lookup("java:comp/BeanManager");
-                setControllerFactory(new BeanManagerControllerFactory());
+                setControllerFactory(new CDIControllerFactory());
             }catch(NamingException ex){
                 setControllerFactory(new SimpleControllerFactory());
             }
@@ -96,7 +98,7 @@ public class RegistratorListener implements ServletContextListener {
         this.controllerFactory = controllerFactory;
     }
     
-    public void contextDestroyed(ServletContextEvent sce) {
+    public final void contextDestroyed(ServletContextEvent sce) {
         controllerFactory.dispose();
     }
     
@@ -111,7 +113,6 @@ public class RegistratorListener implements ServletContextListener {
                 if (line.trim().startsWith("#")) {
                     continue;
                 }
-                System.out.println("line: "+line);
                 Class klass = Class.forName(getBinaryClassname(line));
                 if (klass.isAnnotationPresent(URL.class)) {
                     controllersURL.add(klass);
@@ -143,16 +144,23 @@ public class RegistratorListener implements ServletContextListener {
     }
     
     private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
-        AbstractControllerServlet servlet;
+        ControllerServlet servlet=null;
+        Controller controller;
         if (Controller.class.isAssignableFrom(klass)) {
-            servlet=new TypeSafeControllerServlet(controllerFactory.createController(klass.asSubclass(Controller.class)));
+            controller = controllerFactory.createController(klass.asSubclass(Controller.class));
         }else{
             DynamicController dynamicController=DynamicController.createDynamicController(controllerFactory.createController(klass));
             configureDynamicController(dynamicController);
-            servlet=new DynamicControllerServlet(dynamicController);
+            controller=dynamicController;
+        }
+        URL url=klass.getAnnotation(URL.class);
+        HttpMethod[] validHttpMethods= url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
+        if(klass.isAnnotationPresent(ForwardTo.class)){
+            servlet=ControllerServlet.createInstanceWithForward(controller, klass.getAnnotation(ForwardTo.class).value(), validHttpMethods);
+        }else if(klass.isAnnotationPresent(RedirectTo.class)){
+            servlet=ControllerServlet.createInstanceWithRedirect(controller, klass.getAnnotation(RedirectTo.class).value(), validHttpMethods);
         }
         ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), servlet);
-        URL url = klass.getAnnotation(URL.class);
         dynamic.addMapping(url.value());
     }
     
@@ -184,15 +192,15 @@ public class RegistratorListener implements ServletContextListener {
                 controller.addConverter(entry.getKey(), entry.getValue());
             }
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CarmesiInitializer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CarmesiInitializer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            Logger.getLogger(RegistratorListener.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CarmesiInitializer.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public void addConverter(Class<? extends Converter> klass) throws InstantiationException, IllegalAccessException{
+    private void addConverter(Class<? extends Converter> klass) throws InstantiationException, IllegalAccessException{
         Converter converter=klass.newInstance();
         converterMap.put(klass.getAnnotation(ConverterFor.class).value(), converter);
     }

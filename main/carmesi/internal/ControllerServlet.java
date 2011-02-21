@@ -15,26 +15,35 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * @author Victor Hugo Herrera Maldonado
  */
-public abstract class AbstractControllerServlet extends HttpServlet{
+class ControllerServlet extends HttpServlet{
     private Controller controller;
-
-    public AbstractControllerServlet(Controller controller) {
-        this.controller = controller;
+    private HttpMethod[] validHttpMethods;
+    private String forwardValue;
+    private String redirectValue;
+    
+    public static ControllerServlet createInstanceWithForward(Controller controller, String forwardValue, HttpMethod[] validHttpMethods){
+        ControllerServlet servlet=new ControllerServlet();
+        servlet.controller=controller;
+        servlet.forwardValue=forwardValue;
+        servlet.validHttpMethods=validHttpMethods;
+        return servlet;
+    }
+    
+    public static ControllerServlet createInstanceWithRedirect(Controller controller, String redirectValue, HttpMethod[] validHttpMethods){
+        ControllerServlet servlet=new ControllerServlet();
+        servlet.controller=controller;
+        servlet.redirectValue=redirectValue;
+        servlet.validHttpMethods=validHttpMethods;
+        return servlet;
     }
 
     public Controller getController() {
         return controller;
     }
     
-    protected abstract HttpMethod[] getValidMethods();
-    
-    protected abstract String getViewToForward();
-    
-    protected abstract String getViewToRedirect();
-    
     private void validateHttpMethod(HttpServletRequest request) throws ServletException{
         boolean validHttpMethod=false;
-        for(HttpMethod method:getValidMethods()){
+        for(HttpMethod method:validHttpMethods){
             if(request.getMethod().equals(method.toString())){
                 validHttpMethod=true;
                 break;
@@ -46,10 +55,10 @@ public abstract class AbstractControllerServlet extends HttpServlet{
     }
     
     private void toView(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        if(getViewToForward() != null){
-            request.getRequestDispatcher(getViewToForward()).forward(request, response);
-        }else if(getViewToRedirect() != null){
-            String url=getViewToRedirect();
+        if(forwardValue != null){
+            request.getRequestDispatcher(forwardValue).forward(request, response);
+        }else if(redirectValue != null){
+            String url=redirectValue;
             if(url.startsWith("//")){
                 url=url.substring(2);
             }else if(url.startsWith("/")){

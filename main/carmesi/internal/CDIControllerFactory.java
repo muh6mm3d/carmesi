@@ -6,6 +6,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
@@ -14,7 +15,7 @@ import javax.naming.NamingException;
  * 
  * @author Victor Hugo Herrera Maldonado
  */
-public class BeanManagerControllerFactory implements ControllerFactory{
+class CDIControllerFactory implements ControllerFactory{
     private BeanManager beanManager;
     private CreationalContext creationalContext;
     private Collection<Object> objects=new LinkedList<Object>();
@@ -56,5 +57,5 @@ public class BeanManagerControllerFactory implements ControllerFactory{
         objects.add(target);
         return object;
     }
-
+    
 }

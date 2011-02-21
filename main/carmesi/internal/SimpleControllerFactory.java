@@ -5,7 +5,7 @@ package carmesi.internal;
  *
  * @author Victor Hugo Herrera Maldonado
  */
-public class SimpleControllerFactory implements ControllerFactory{
+class SimpleControllerFactory implements ControllerFactory{
 
     public void init() {
         
