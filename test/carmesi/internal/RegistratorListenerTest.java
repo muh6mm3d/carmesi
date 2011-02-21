@@ -1,7 +1,6 @@
 package carmesi.internal;
 
 import java.util.List;
-import carmesi.internal.dynamic.DynamicControllerServlet;
 import org.junit.Test;
 import java.util.EnumSet;
 import javax.servlet.DispatcherType;
@@ -13,9 +12,9 @@ import carmesi.BeforeURL;
 import carmesi.Controller;
 import carmesi.RedirectTo;
 import carmesi.URL;
-import carmesi.convertion.Converter;
-import carmesi.convertion.ConverterFor;
-import carmesi.convertion.TargetInfo;
+import carmesi.convert.Converter;
+import carmesi.convert.ConverterFor;
+import carmesi.convert.TargetInfo;
 import carmesi.internal.dynamic.DynamicController;
 import java.awt.Point;
 import java.io.BufferedWriter;
@@ -70,10 +69,10 @@ public class RegistratorListenerTest {
         FilterRegistration.Dynamic dynamicFilter=mock(FilterRegistration.Dynamic.class);
         when(servletContext.addFilter(anyString(), (Filter)any())).thenReturn(dynamicFilter);
         
-        RegistratorListener registrator=new RegistratorListener(factory, file.toURI().toURL());
+        CarmesiInitializer registrator=new CarmesiInitializer(factory, file.toURI().toURL());
         registrator.contextInitialized(new ServletContextEvent(servletContext));
         
-        ArgumentCaptor<DynamicControllerServlet> servletCaptor=ArgumentCaptor.forClass(DynamicControllerServlet.class);
+        ArgumentCaptor<ControllerServlet> servletCaptor=ArgumentCaptor.forClass(ControllerServlet.class);
         ArgumentCaptor<ControllerFilter> filterCaptor=ArgumentCaptor.forClass(ControllerFilter.class);
         
 //        verify(servletContext, times(2)).addServlet(anyString(), (Servlet)any());

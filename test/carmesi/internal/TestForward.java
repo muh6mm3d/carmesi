@@ -8,7 +8,7 @@ import carmesi.Controller;
 import carmesi.URL;
 import javax.servlet.ServletConfig;
 import carmesi.ForwardTo;
-import carmesi.internal.dynamic.DynamicControllerServlet;
+import carmesi.HttpMethod;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +27,8 @@ public class TestForward {
     @Test
     public void shouldForwardTo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        AbstractControllerServlet servlet=new DynamicControllerServlet(DynamicController.createDynamicController(new SimpleForwardController()));
+        ControllerServlet servlet=ControllerServlet.createInstanceWithForward(DynamicController.createDynamicController(new SimpleForwardController()), "/viewForward.jsp", HttpMethod.values());
+//                new DynamicControllerServlet(DynamicController.createDynamicController(new SimpleForwardController()));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");
@@ -39,7 +40,7 @@ public class TestForward {
     @Test
     public void shouldForwardToToo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        AbstractControllerServlet servlet=new TypeSafeControllerServlet(new TypesafeForwardController());
+        ControllerServlet servlet=ControllerServlet.createInstanceWithForward(new TypesafeForwardController(), "/viewForward.jsp", HttpMethod.values());
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");
