@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
  * 
  * @author Victor
  */
-public class ExecutionContext {
+class ExecutionContext {
     private HttpServletRequest request;
     private HttpServletResponse response;
     private ServletContext servletContext;
