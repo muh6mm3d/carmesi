@@ -3,7 +3,6 @@ package carmesi.internal.dynamic;
 import carmesi.convert.TargetInfo;
 import carmesi.convert.Converter;
 import carmesi.convert.DateConverter;
-import carmesi.HttpMethod;
 import carmesi.RequestParameter;
 import carmesi.RequestAttribute;
 import carmesi.ContextParameter;
@@ -12,10 +11,7 @@ import carmesi.ApplicationAttribute;
 import carmesi.Controller;
 import carmesi.SessionAttribute;
 import carmesi.CookieValue;
-import carmesi.ForwardTo;
-import carmesi.RedirectTo;
 import carmesi.ToJSON;
-import carmesi.URL;
 import carmesi.jsonserializers.JSONSerializer;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -263,7 +259,7 @@ public class DynamicController implements Controller{
         }else if(targetType.equals(String.class)){
             return string;
         }else if(converter != null){
-            return converter.convert(string, parameterInfo);
+            return converter.convertToObject(string, parameterInfo);
         }else{
             Method[] methods = targetType.getDeclaredMethods();
             for(Method m: methods){
@@ -361,7 +357,15 @@ public class DynamicController implements Controller{
                 }else if(method.isAnnotationPresent(ApplicationAttribute.class)){
                     executionContext.getServletContext().setAttribute(method.getAnnotation(ApplicationAttribute.class).value(), value);
                 }else if(method.isAnnotationPresent(CookieValue.class)){
-                    Cookie cookie=new Cookie(method.getAnnotation(CookieValue.class).value(), String.valueOf(value));
+                    Converter<Object> converter=value != null? getConverter((Class<Object>)value.getClass()): null;
+                    String stringValue;
+                    if(converter != null){
+                        TargetInfo targetInfo = new TargetInfo(method.getReturnType(), method.getAnnotations());
+                        stringValue=converter.convertToString(value, targetInfo);
+                    }else{
+                        stringValue=String.valueOf(value);
+                    }
+                    Cookie cookie=new Cookie(method.getAnnotation(CookieValue.class).value(), stringValue);
                     cookie.setMaxAge(defaultCookieMaxAge);
                     executionContext.getResponse().addCookie(cookie);
                 }else if(value instanceof Cookie){

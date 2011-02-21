@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @author Victor Hugo Herrera Maldonado
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
+@Target({ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
 public @interface DatePattern {
 
     /**

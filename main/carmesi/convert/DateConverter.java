@@ -12,7 +12,7 @@ import java.util.Date;
 @ConverterFor(Date.class)
 public class DateConverter implements  Converter<Date>{
 
-    public Date convert(String stringValue, TargetInfo info) {
+    public Date convertToObject(String stringValue, TargetInfo info) {
         try{
             DatePattern pattern = info.getAnnotation(DatePattern.class);
             if(pattern == null){
@@ -20,8 +20,16 @@ public class DateConverter implements  Converter<Date>{
             }
             return new SimpleDateFormat(pattern.value()).parse(stringValue);
         }catch(ParseException ex){
-            throw new IllegalArgumentException("Illegal date");
+            throw new IllegalArgumentException("Illegal date: "+stringValue);
         }
+    }
+
+    public String convertToString(Date value, TargetInfo info) {
+        DatePattern pattern = info.getAnnotation(DatePattern.class);
+        if(pattern == null){
+            throw new IllegalArgumentException("Date pattern not defined");
+        }
+        return new SimpleDateFormat(pattern.value()).format(value);
     }
 
 }
