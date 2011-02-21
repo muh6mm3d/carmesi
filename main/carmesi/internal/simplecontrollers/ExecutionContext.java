@@ -1,4 +1,4 @@
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;

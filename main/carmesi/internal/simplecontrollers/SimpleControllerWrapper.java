@@ -1,4 +1,4 @@
-package carmesi.internal.dynamic;
+package carmesi.internal.simplecontrollers;
 
 import carmesi.convert.TargetInfo;
 import carmesi.convert.Converter;
@@ -47,16 +47,16 @@ import javax.servlet.http.HttpSession;
  * 
  * @author Victor Hugo Herrera Maldonado
  */
-public class DynamicController implements Controller{
-    private Object object;
+public class SimpleControllerWrapper implements Controller{
+    private Object simpleController;
     private Method method;
     private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
     private boolean autoRequestAttribute=true;
     private int defaultCookieMaxAge=-1;
     private JSONSerializer jsonSerializer;
     
-    private DynamicController(Object o, Method m){
-        object=o;
+    private SimpleControllerWrapper(Object simpleController, Method m){
+        this.simpleController=simpleController;
         method=m;
         addConverter(Date.class, new DateConverter());
     }
@@ -132,14 +132,7 @@ public class DynamicController implements Controller{
      * @throws Exception is an exception occurs when invoking the pojo controller.
      */
     public void execute(HttpServletRequest request, HttpServletResponse response) throws NullPointerException, Exception {
-        if(request == null){
-            throw new NullPointerException("request is null");
-        }
-        if(response == null){
-            throw new NullPointerException("response is null");
-        }
-        Result result=execute(new ExecutionContext(request, response));
-        result.process();
+        executeAndGetResult(request, response);
     }
     
     public Result executeAndGetResult(HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -164,7 +157,7 @@ public class DynamicController implements Controller{
         for(int i=0; i < parameterTypes.length; i++){
             actualParameters[i]=getActualParameter(new TargetInfo(parameterTypes[i], parameterAnnotations[i]), context);
         }
-        return new Result(method.invoke(object, actualParameters), method.getReturnType().equals(Void.TYPE), context);
+        return new Result(method.invoke(simpleController, actualParameters), method.getReturnType().equals(Void.TYPE), context);
     }
 
     private Object getActualParameter(TargetInfo parameterInfo, ExecutionContext context) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException {
@@ -301,19 +294,19 @@ public class DynamicController implements Controller{
     }
     
     /**
-     * Create an instance using the specified object.
+     * Create an instance of SimpleControllerWrapper with the specified POJO controller.
      * 
      * @param <T>
-     * @param object
+     * @param simpleController A POJO for using it as a Controller.
      * @return
      * @throws NullPointerException if object is null.
      */
-    public static <T> DynamicController createDynamicController(Object object) throws  NullPointerException{
-        if(object == null){
+    public static <T> SimpleControllerWrapper createInstance(Object simpleController) throws  NullPointerException{
+        if(simpleController == null){
             throw new NullPointerException("controller object is null");
         }
         List<Method> methods=new LinkedList<Method>();
-        for(Method method:object.getClass().getDeclaredMethods()){
+        for(Method method:simpleController.getClass().getDeclaredMethods()){
             if(Modifier.isPublic(method.getModifiers()) && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)){
                 methods.add(method);
             }
@@ -321,7 +314,7 @@ public class DynamicController implements Controller{
         if(methods.size() != 1){
             throw new IllegalArgumentException("Controller must have one and only one public method.");
         }
-        return new DynamicController(object, methods.get(0));
+        return new SimpleControllerWrapper(simpleController, methods.get(0));
     }
 
     public class Result{

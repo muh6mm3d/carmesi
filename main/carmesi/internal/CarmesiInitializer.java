@@ -1,7 +1,7 @@
 package carmesi.internal;
 
 import carmesi.jsonserializers.JSONSerializer;
-import carmesi.internal.dynamic.DynamicController;
+import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.BeforeURL;
 import carmesi.Controller;
 import carmesi.ForwardTo;
@@ -149,9 +149,9 @@ public class CarmesiInitializer implements ServletContextListener {
         if (Controller.class.isAssignableFrom(klass)) {
             controller = controllerFactory.createController(klass.asSubclass(Controller.class));
         }else{
-            DynamicController dynamicController=DynamicController.createDynamicController(controllerFactory.createController(klass));
-            configureDynamicController(dynamicController);
-            controller=dynamicController;
+            SimpleControllerWrapper simpleController=SimpleControllerWrapper.createInstance(controllerFactory.createController(klass));
+            configure(simpleController);
+            controller=simpleController;
         }
         URL url=klass.getAnnotation(URL.class);
         HttpMethod[] validHttpMethods= url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
@@ -169,9 +169,9 @@ public class CarmesiInitializer implements ServletContextListener {
         if (Controller.class.isAssignableFrom(klass)) {
             filter=new ControllerFilter(controllerFactory.createController(klass.asSubclass(Controller.class)));
         }else{
-            DynamicController dynamicController = DynamicController.createDynamicController(controllerFactory.createController(klass));
-            configureDynamicController(dynamicController);
-            filter=new ControllerFilter(dynamicController);
+            SimpleControllerWrapper simpleController = SimpleControllerWrapper.createInstance(controllerFactory.createController(klass));
+            configure(simpleController);
+            filter=new ControllerFilter(simpleController);
         }
         FilterRegistration.Dynamic dynamic = context.addFilter(klass.getSimpleName(), filter);
         BeforeURL before = klass.getAnnotation(BeforeURL.class);
@@ -179,7 +179,7 @@ public class CarmesiInitializer implements ServletContextListener {
         dynamic.addMappingForUrlPatterns(set, false, before.value());
     }
     
-    private void configureDynamicController(DynamicController controller){
+    private void configure(SimpleControllerWrapper controller){
         try {
             controller.setAutoRequestAttribute(Boolean.parseBoolean(getParameter("carmesi.requestAttribute.autoGeneration", "true")));
             controller.setDefaultCookieMaxAge(Integer.parseInt(getParameter("carmesi.cookie.maxAge", "-1")));
