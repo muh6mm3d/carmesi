@@ -65,7 +65,20 @@ public class DynamicController implements Controller{
         addConverter(Date.class, new DateConverter());
     }
     
-    public final <T> void addConverter(Class<T> klass, Converter<T> converter){
+    /**
+     * 
+     * @param <T>
+     * @param klass
+     * @param converter
+     * @throws NullPointerException if class or converter is null
+     */
+    public final <T> void addConverter(Class<T> klass, Converter<T> converter) throws NullPointerException {
+        if(klass == null){
+            throw new NullPointerException("class is null");
+        }
+        if(converter == null){
+            throw new NullPointerException("converter is null");
+        }
         converters.put(klass, converter);
     }
     
@@ -89,6 +102,11 @@ public class DynamicController implements Controller{
         return defaultCookieMaxAge;
     }
 
+    /**
+     * 
+     * @param defaultCookieMaxAge 
+     * @see Cookie.setMaxAge
+     */
     public void setDefaultCookieMaxAge(int defaultCookieMaxAge) {
         this.defaultCookieMaxAge = defaultCookieMaxAge;
     }
@@ -97,16 +115,44 @@ public class DynamicController implements Controller{
         return jsonSerializer;
     }
 
-    public void setJSONSerializer(JSONSerializer jsonSerializer) {
+    /**
+     * 
+     * @param jsonSerializer
+     * @throws NullPointerException if jsonSerializer is null
+     */
+    public void setJSONSerializer(JSONSerializer jsonSerializer) throws  NullPointerException{
+        if (jsonSerializer == null) {
+            throw new NullPointerException("jsonSerializer is null");
+        }
         this.jsonSerializer = jsonSerializer;
     }
     
-    public void execute(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    /**
+     * Executes the controller.
+     * 
+     * @param request
+     * @param response
+     * @throws NullPointerException if request or response is null
+     * @throws Exception is an exception occurs when invoking the pojo controller.
+     */
+    public void execute(HttpServletRequest request, HttpServletResponse response) throws NullPointerException, Exception {
+        if(request == null){
+            throw new NullPointerException("request is null");
+        }
+        if(response == null){
+            throw new NullPointerException("response is null");
+        }
         Result result=execute(new ExecutionContext(request, response));
         result.process();
     }
     
     public Result executeAndGetResult(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if(request == null){
+            throw new NullPointerException("request is null");
+        }
+        if(response == null){
+            throw new NullPointerException("response is null");
+        }
         Result result=execute(new ExecutionContext(request, response));
         result.process();
         return result;
@@ -258,7 +304,18 @@ public class DynamicController implements Controller{
         return object;
     }
     
-    public static <T> DynamicController createDynamicController(Object object) {
+    /**
+     * Create an instance using the specified object.
+     * 
+     * @param <T>
+     * @param object
+     * @return
+     * @throws NullPointerException if object is null.
+     */
+    public static <T> DynamicController createDynamicController(Object object) throws  NullPointerException{
+        if(object == null){
+            throw new NullPointerException("controller object is null");
+        }
         List<Method> methods=new LinkedList<Method>();
         for(Method method:object.getClass().getDeclaredMethods()){
             if(Modifier.isPublic(method.getModifiers()) && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)){
