@@ -1,8 +1,8 @@
 package carmesi.internal.dynamic;
 
-import carmesi.convertion.TargetInfo;
-import carmesi.convertion.Converter;
-import carmesi.convertion.DateConverter;
+import carmesi.convert.TargetInfo;
+import carmesi.convert.Converter;
+import carmesi.convert.DateConverter;
 import carmesi.HttpMethod;
 import carmesi.RequestParameter;
 import carmesi.RequestAttribute;
@@ -112,22 +112,8 @@ public class DynamicController implements Controller{
         return result;
     }
 
-    public String getForwardTo() {
-        ForwardTo forwardTo = object.getClass().getAnnotation(ForwardTo.class);
-        return forwardTo != null? forwardTo.value() : null;
-    }
-
-    public String getRedirectTo() {
-        RedirectTo redirectTo = object.getClass().getAnnotation(RedirectTo.class);
-        return redirectTo != null? redirectTo.value() : null;
-    }
-
-    public HttpMethod[] getHttpMethods() {
-        URL url=object.getClass().getAnnotation(URL.class);
-        return url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
-    }
     
-    protected Result execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
+    private Result execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Object[] actualParameters=new Object[parameterTypes.length];
@@ -296,17 +282,18 @@ public class DynamicController implements Controller{
             executionContext=context;
         }
 
-        public boolean isVoid() {
-            return isVoid;
-        }
-
+        /**
+         * The value of the result.
+         * 
+         * @return
+         */
         public Object getValue() {
             return value;
         }
         
         private Pattern getterPattern=Pattern.compile("get(.+)");
 
-        protected void process() throws IOException {
+        private void process() throws IOException {
             if(isVoid){
                 return;
             }else{
