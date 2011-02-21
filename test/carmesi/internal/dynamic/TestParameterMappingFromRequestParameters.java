@@ -127,11 +127,15 @@ public class TestParameterMappingFromRequestParameters {
         });
         controller.addConverter(MyClass.class, new Converter<MyClass>(){
 
-            public MyClass convert(String stringValue, TargetInfo info) {
+            public MyClass convertToObject(String stringValue, TargetInfo info) {
                 assertThat(stringValue, is("value"));
                 assertNotNull(info.getAnnotation(MyAnnotation1.class));
                 assertNotNull(info.getAnnotation(MyAnnotation2.class));
                 return new MyClass("qwerty");
+            }
+
+            public String convertToString(MyClass value, TargetInfo info) {
+                return null;
             }
             
         });

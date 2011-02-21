@@ -169,7 +169,11 @@ public class RegistratorListenerTest {
     @ConverterFor(Point.class)
     public static class MyConverter implements  Converter<Point>{
 
-        public Point convert(String stringValue, TargetInfo info) {
+        public Point convertToObject(String stringValue, TargetInfo info) {
+            return null;
+        }
+
+        public String convertToString(Point value, TargetInfo info) {
             return null;
         }
         

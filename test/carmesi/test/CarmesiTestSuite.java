@@ -6,6 +6,7 @@ package carmesi.test;
 import carmesi.internal.RegistratorListenerTest;
 import carmesi.internal.TestForward;
 import carmesi.internal.TestRedirect;
+import carmesi.internal.dynamic.TestCookieValue;
 import carmesi.internal.dynamic.TestParameterMappingFromAttributes;
 import carmesi.internal.dynamic.TestParameterMappingFromImplicitObjects;
 import carmesi.internal.dynamic.TestParameterMappingFromRequestParameters;
@@ -25,6 +26,6 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({RegistratorListenerTest.class, TestForward.class, TestRedirect.class, 
     TestParameterMappingFromAttributes.class, TestParameterMappingFromImplicitObjects.class, TestParameterMappingFromRequestParameters.class,
     TestParameterMappingFromRequestParametersCustom.class, TestProcessReturnValues.class, TestToJSON.class,
-    GsonSerializerTest.class, JacksonSerializerTest.class})
+    GsonSerializerTest.class, JacksonSerializerTest.class, TestCookieValue.class})
 public class CarmesiTestSuite {
 }
