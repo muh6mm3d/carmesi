@@ -16,8 +16,15 @@ public class TargetInfo {
      * 
      * @param parameterType
      * @param annotations 
+     * @throws NullPointerException if parameterType or annotations is null
      */
     public TargetInfo(Class parameterType, Annotation[] annotations) {
+        if (parameterType == null) {
+            throw new NullPointerException("parameterType is null");
+        }
+        if (annotations == null) {
+            throw new NullPointerException("annotations is null");
+        }
         this.parameterType = parameterType;
         this.annotations = annotations;
     }
