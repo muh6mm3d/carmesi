@@ -12,22 +12,29 @@ import java.util.Date;
 @ConverterFor(Date.class)
 public class DateConverter implements  Converter<Date>{
 
-    public Date convertToObject(String stringValue, TargetInfo info) {
+    public Date convertToObject(String stringValue, TargetInfo info) throws ConverterException {
+        assert info != null;
+        if(stringValue == null){
+            return null;
+        }
         try{
             DatePattern pattern = info.getAnnotation(DatePattern.class);
             if(pattern == null){
-                throw new IllegalArgumentException("Date pattern not defined");
+                throw new ConverterException("Date pattern not defined");
             }
             return new SimpleDateFormat(pattern.value()).parse(stringValue);
         }catch(ParseException ex){
-            throw new IllegalArgumentException("Illegal date: "+stringValue);
+            throw new ConverterException("Illegal date: "+stringValue);
         }
     }
 
-    public String convertToString(Date value, TargetInfo info) {
+    public String convertToString(Date value, TargetInfo info) throws ConverterException {
+        if(value == null){
+            return null;
+        }
         DatePattern pattern = info.getAnnotation(DatePattern.class);
         if(pattern == null){
-            throw new IllegalArgumentException("Date pattern not defined");
+            throw new ConverterException("Date pattern not defined");
         }
         return new SimpleDateFormat(pattern.value()).format(value);
     }
