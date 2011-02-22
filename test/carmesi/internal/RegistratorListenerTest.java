@@ -61,7 +61,7 @@ public class RegistratorListenerTest {
         writer.close();
         
         ServletContext servletContext=mock(ServletContext.class);
-        ControllerFactory factory=spy(new SimpleControllerFactory());
+        ObjectFactory factory=spy(new SimpleObjectFactory());
         
         ServletRegistration.Dynamic dynamicServlet=mock(ServletRegistration.Dynamic.class);
         when(servletContext.addServlet(anyString(), (Servlet)any())).thenReturn(dynamicServlet);
