@@ -19,7 +19,7 @@ import org.junit.runners.Suite;
 
 /**
  *
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({RegistratorListenerTest.class, TestForward.class, TestRedirect.class, 

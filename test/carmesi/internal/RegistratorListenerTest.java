@@ -38,7 +38,7 @@ import static org.hamcrest.CoreMatchers.*;
 /**
  * Annotation processing must be disabled.
  * 
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class RegistratorListenerTest {
     @Rule

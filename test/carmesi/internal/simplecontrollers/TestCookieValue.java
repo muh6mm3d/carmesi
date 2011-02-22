@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
- * @author Victor
+ * @author Hugo Herrera Maldonado
  */
 public class TestCookieValue {
     private boolean invoked=false;
