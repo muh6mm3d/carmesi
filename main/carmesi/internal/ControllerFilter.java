@@ -21,7 +21,8 @@ import javax.servlet.http.HttpServletResponse;
 class ControllerFilter implements  Filter{
     private Controller controller;
 
-    public ControllerFilter(Controller controller) {
+    ControllerFilter(Controller controller) {
+        assert controller != null;
         this.controller = controller;
     }
     
@@ -38,6 +39,9 @@ class ControllerFilter implements  Filter{
     }
     
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        assert request != null;
+        assert response != null;
+        assert chain != null;
         try {
             controller.execute((HttpServletRequest)request, (HttpServletResponse)response);
             chain.doFilter(request, response);

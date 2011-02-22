@@ -14,7 +14,9 @@ class ExecutionContext {
     private HttpServletResponse response;
     private ServletContext servletContext;
 
-    public ExecutionContext(HttpServletRequest request, HttpServletResponse response) {
+    ExecutionContext(HttpServletRequest request, HttpServletResponse response) {
+        assert request != null;
+        assert response != null;
         this.request = request;
         this.response = response;
         this.servletContext = request.getServletContext();

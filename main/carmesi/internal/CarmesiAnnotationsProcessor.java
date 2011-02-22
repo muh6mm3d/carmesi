@@ -34,6 +34,8 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
 
     @Override
     public final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+        assert annotations != null;
+        assert roundEnv != null;
         if(annotations.isEmpty()){
             return false;
         }

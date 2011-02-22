@@ -5,7 +5,7 @@ package carmesi.internal;
  * 
  * @author Victor Hugo Herrera Maldonado
  */
-interface ControllerFactory {
+interface ObjectFactory {
     
     void init();
     

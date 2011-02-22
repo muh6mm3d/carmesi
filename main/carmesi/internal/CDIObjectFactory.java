@@ -6,16 +6,15 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
-import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 /**
- * ControllerFactory implementation with support of CDI.
+ * ObjectFactory implementation with support of CDI.
  * 
  * @author Victor Hugo Herrera Maldonado
  */
-class CDIControllerFactory implements ControllerFactory{
+class CDIObjectFactory implements ObjectFactory{
     private BeanManager beanManager;
     private CreationalContext creationalContext;
     private Collection<Object> objects=new LinkedList<Object>();
@@ -44,7 +43,20 @@ class CDIControllerFactory implements ControllerFactory{
         }
     }
 
-    public <T> T createController(Class<T> klass) throws InstantiationException, IllegalAccessException {
+    /**
+     * Creates an instance of the given klass.
+     * 
+     * @param <T>
+     * @param klass
+     * @return
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     * @throws NullPointerException if klass is null
+     */
+    public <T> T createController(Class<T> klass) throws NullPointerException, InstantiationException, IllegalAccessException {
+        if (klass == null) {
+            throw new NullPointerException("klass is null");
+        }
         T object;
         AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(klass);
         InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);

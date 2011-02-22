@@ -53,11 +53,13 @@ public class CarmesiInitializer implements ServletContextListener {
     public static final String CONFIG_FILE_PATH = "META-INF/carmesi.list";
     private ServletContext context;
     
-    private ControllerFactory controllerFactory;
+    private ObjectFactory controllerFactory;
     private Map<Class, Converter> converterMap=new HashMap<Class, Converter>();
     private Set<java.net.URL> configResources=new HashSet<java.net.URL>();
 
-    CarmesiInitializer(ControllerFactory factory, java.net.URL... configResources) {
+    CarmesiInitializer(ObjectFactory factory, java.net.URL... configResources) {
+        assert factory != null;
+        assert configResources != null;
         setControllerFactory(factory);
         this.configResources.addAll(Arrays.asList(configResources));
     }
@@ -67,13 +69,14 @@ public class CarmesiInitializer implements ServletContextListener {
     }
     
     public final void contextInitialized(ServletContextEvent sce) {
+        assert sce != null;
         context = sce.getServletContext();
         if(controllerFactory == null){
             try{
                 new InitialContext().lookup("java:comp/BeanManager");
-                setControllerFactory(new CDIControllerFactory());
+                setControllerFactory(new CDIObjectFactory());
             }catch(NamingException ex){
-                setControllerFactory(new SimpleControllerFactory());
+                setControllerFactory(new SimpleObjectFactory());
             }
         }
         controllerFactory.init();
@@ -94,11 +97,13 @@ public class CarmesiInitializer implements ServletContextListener {
         }
     }
 
-    private void setControllerFactory(ControllerFactory controllerFactory) {
+    private void setControllerFactory(ObjectFactory controllerFactory) {
+        assert controllerFactory != null;
         this.controllerFactory = controllerFactory;
     }
     
     public final void contextDestroyed(ServletContextEvent sce) {
+        assert sce != null;
         controllerFactory.dispose();
     }
     
@@ -136,6 +141,8 @@ public class CarmesiInitializer implements ServletContextListener {
     }
 
     private String getParameter(String name, String defaultValue){
+        assert name != null;
+        assert defaultValue != null;
         if(context.getInitParameter(name) != null){
             return context.getInitParameter(name);
         }else{
@@ -144,6 +151,7 @@ public class CarmesiInitializer implements ServletContextListener {
     }
     
     private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
+        assert klass != null;
         ControllerServlet servlet=null;
         Controller controller;
         if (Controller.class.isAssignableFrom(klass)) {
@@ -165,6 +173,7 @@ public class CarmesiInitializer implements ServletContextListener {
     }
     
     private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
+        assert klass != null;
         ControllerFilter filter;
         if (Controller.class.isAssignableFrom(klass)) {
             filter=new ControllerFilter(controllerFactory.createController(klass.asSubclass(Controller.class)));
@@ -180,6 +189,7 @@ public class CarmesiInitializer implements ServletContextListener {
     }
     
     private void configure(SimpleControllerWrapper controller){
+        assert controller != null;
         try {
             controller.setAutoRequestAttribute(Boolean.parseBoolean(getParameter("carmesi.requestAttribute.autoGeneration", "true")));
             controller.setDefaultCookieMaxAge(Integer.parseInt(getParameter("carmesi.cookie.maxAge", "-1")));
@@ -201,11 +211,13 @@ public class CarmesiInitializer implements ServletContextListener {
     }
     
     private void addConverter(Class<? extends Converter> klass) throws InstantiationException, IllegalAccessException{
+        assert klass != null;
         Converter converter=klass.newInstance();
         converterMap.put(klass.getAnnotation(ConverterFor.class).value(), converter);
     }
 
     private String getBinaryClassname(String canonicalClassname) {
+        assert canonicalClassname != null;
         String[] parts=canonicalClassname.split("\\.");
         boolean couldBeNestedClass=false;
         StringBuilder builder=new StringBuilder();

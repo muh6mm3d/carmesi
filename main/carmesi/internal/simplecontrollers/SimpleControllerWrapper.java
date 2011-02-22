@@ -12,6 +12,7 @@ import carmesi.Controller;
 import carmesi.SessionAttribute;
 import carmesi.CookieValue;
 import carmesi.ToJSON;
+import carmesi.convert.ConverterException;
 import carmesi.jsonserializers.JSONSerializer;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -56,6 +57,8 @@ public class SimpleControllerWrapper implements Controller{
     private JSONSerializer jsonSerializer;
     
     private SimpleControllerWrapper(Object simpleController, Method m){
+        assert simpleController != null;
+        assert m != null;
         this.simpleController=simpleController;
         method=m;
         addConverter(Date.class, new DateConverter());
@@ -78,7 +81,14 @@ public class SimpleControllerWrapper implements Controller{
         converters.put(klass, converter);
     }
     
-    public <T> Converter<T> getConverter(Class<T> klass){
+    /**
+     * 
+     * @param <T>
+     * @param klass
+     * @throws NullPointerException if klass is null
+     * @return 
+     */
+    public <T> Converter<T> getConverter(Class<T> klass) throws NullPointerException {
         return converters.get(klass);
     }
     
@@ -135,7 +145,16 @@ public class SimpleControllerWrapper implements Controller{
         executeAndGetResult(request, response);
     }
     
-    public Result executeAndGetResult(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    /**
+     * Executes the controller.
+     * 
+     * @param request
+     * @param response
+     * @throws NullPointerException if request or response is null
+     * @throws Exception is an exception occurs when invoking the pojo controller
+     * @return Result the result of the execution.
+     */
+    public Result executeAndGetResult(HttpServletRequest request, HttpServletResponse response) throws NullPointerException, Exception {
         if(request == null){
             throw new NullPointerException("request is null");
         }
@@ -149,6 +168,7 @@ public class SimpleControllerWrapper implements Controller{
 
     
     private Result execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
+        assert context != null;
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Object[] actualParameters=new Object[parameterTypes.length];
@@ -161,6 +181,8 @@ public class SimpleControllerWrapper implements Controller{
     }
 
     private Object getActualParameter(TargetInfo parameterInfo, ExecutionContext context) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException {
+        assert parameterInfo != null;
+        assert context != null;
         /* Definir por tipos */
         if(parameterInfo.getType().equals(ServletContext.class)){
             return context.getServletContext();
@@ -227,6 +249,8 @@ public class SimpleControllerWrapper implements Controller{
     }
     
     private Object convertStringToType(String string, TargetInfo parameterInfo){
+        assert string != null;
+        assert parameterInfo != null;
         Class<?> targetType=parameterInfo.getType();
         Converter<?> converter = converters.get(parameterInfo.getType());
         if(string == null){
@@ -252,7 +276,11 @@ public class SimpleControllerWrapper implements Controller{
         }else if(targetType.equals(String.class)){
             return string;
         }else if(converter != null){
-            return converter.convertToObject(string, parameterInfo);
+            try{
+                return converter.convertToObject(string, parameterInfo);
+            }catch(ConverterException ex){
+                throw new RuntimeException(ex);
+            }
         }else{
             Method[] methods = targetType.getDeclaredMethods();
             for(Method m: methods){
@@ -274,6 +302,8 @@ public class SimpleControllerWrapper implements Controller{
     }
     
     private Object fillBeanWithParameters(Object object, HttpServletRequest request) throws IntrospectionException, IllegalAccessException, InvocationTargetException{
+        assert object != null;
+        assert request != null;
         BeanInfo beanInfo = Introspector.getBeanInfo(object.getClass());
         PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
         if(propertyDescriptors != null){
@@ -323,6 +353,7 @@ public class SimpleControllerWrapper implements Controller{
         private ExecutionContext executionContext;
 
         private Result(Object v, boolean b, ExecutionContext context) {
+            assert context != null;
             value=v;
             isVoid=b;
             executionContext=context;
@@ -353,8 +384,12 @@ public class SimpleControllerWrapper implements Controller{
                     Converter<Object> converter=value != null? getConverter((Class<Object>)value.getClass()): null;
                     String stringValue;
                     if(converter != null){
-                        TargetInfo targetInfo = new TargetInfo(method.getReturnType(), method.getAnnotations());
-                        stringValue=converter.convertToString(value, targetInfo);
+                        try{
+                            TargetInfo targetInfo = new TargetInfo(method.getReturnType(), method.getAnnotations());
+                            stringValue=converter.convertToString(value, targetInfo);
+                        }catch(ConverterException ex){
+                            throw new RuntimeException(ex);
+                        }
                     }else{
                         stringValue=String.valueOf(value);
                     }

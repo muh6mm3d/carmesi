@@ -21,7 +21,10 @@ class ControllerServlet extends HttpServlet{
     private String forwardValue;
     private String redirectValue;
     
-    public static ControllerServlet createInstanceWithForward(Controller controller, String forwardValue, HttpMethod[] validHttpMethods){
+    static ControllerServlet createInstanceWithForward(Controller controller, String forwardValue, HttpMethod[] validHttpMethods){
+        assert controller != null;
+        assert forwardValue != null;
+        assert validHttpMethods != null;
         ControllerServlet servlet=new ControllerServlet();
         servlet.controller=controller;
         servlet.forwardValue=forwardValue;
@@ -29,7 +32,10 @@ class ControllerServlet extends HttpServlet{
         return servlet;
     }
     
-    public static ControllerServlet createInstanceWithRedirect(Controller controller, String redirectValue, HttpMethod[] validHttpMethods){
+    static ControllerServlet createInstanceWithRedirect(Controller controller, String redirectValue, HttpMethod[] validHttpMethods){
+        assert controller != null;
+        assert redirectValue != null;
+        assert validHttpMethods != null;
         ControllerServlet servlet=new ControllerServlet();
         servlet.controller=controller;
         servlet.redirectValue=redirectValue;
@@ -42,6 +48,7 @@ class ControllerServlet extends HttpServlet{
     }
     
     private void validateHttpMethod(HttpServletRequest request) throws ServletException{
+        assert request != null;
         boolean validHttpMethod=false;
         for(HttpMethod method:validHttpMethods){
             if(request.getMethod().equals(method.toString())){
@@ -55,6 +62,8 @@ class ControllerServlet extends HttpServlet{
     }
     
     private void toView(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        assert request != null;
+        assert response != null;
         if(forwardValue != null){
             request.getRequestDispatcher(forwardValue).forward(request, response);
         }else if(redirectValue != null){
@@ -69,11 +78,15 @@ class ControllerServlet extends HttpServlet{
     }
     
     protected final void executeController(HttpServletRequest request, HttpServletResponse response) throws Exception{
+        assert request != null;
+        assert response != null;
         controller.execute(request, response);
     }
     
     @Override
     protected final void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        assert request != null;
+        assert response != null;
         try {
             validateHttpMethod(request);
             executeController(request, response);
