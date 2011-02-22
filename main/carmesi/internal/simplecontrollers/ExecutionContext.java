@@ -1,3 +1,5 @@
+/* Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0) */
+
 package carmesi.internal.simplecontrollers;
 
 import javax.servlet.ServletContext;
@@ -7,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Simple bean containing the request, response and servlet context.
  * 
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 class ExecutionContext {
     private HttpServletRequest request;

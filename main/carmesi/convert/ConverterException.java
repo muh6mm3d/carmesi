@@ -1,14 +1,11 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+/* Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0) */
 
 package carmesi.convert;
 
 /**
  * Throwed if a problem in the conversion occurs.
  * 
- * @author Victor
+ * @author Victor Hugo Herrera Maldonado
  */
 public class ConverterException extends Exception {
 
