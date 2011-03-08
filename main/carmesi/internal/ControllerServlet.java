@@ -46,18 +46,16 @@ class ControllerServlet extends HttpServlet{
         return controller;
     }
     
-    private void validateHttpMethod(HttpServletRequest request) throws ServletException{
-        assert request != null;
+    private boolean isValidHttpMethod(String httpMethod) throws ServletException{
+        assert httpMethod != null;
         boolean validHttpMethod=false;
         for(HttpMethod method:validHttpMethods){
-            if(request.getMethod().equals(method.toString())){
+            if(httpMethod.equalsIgnoreCase(method.toString())){
                 validHttpMethod=true;
                 break;
             }
         }
-        if(!validHttpMethod){
-            throw new ServletException("Not valid HTTP method: "+request.getMethod());
-        }
+        return validHttpMethod;
     }
     
     protected final void executeController(HttpServletRequest request, HttpServletResponse response) throws Exception{
@@ -71,7 +69,10 @@ class ControllerServlet extends HttpServlet{
         assert request != null;
         assert response != null;
         try {
-            validateHttpMethod(request);
+            if(!isValidHttpMethod(request.getMethod())){
+                response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                return;
+            }
             executeController(request, response);
             if(afterControllerAction != null){
                 afterControllerAction.execute(request, response);
