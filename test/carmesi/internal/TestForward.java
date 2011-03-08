@@ -26,7 +26,9 @@ public class TestForward {
     @Test
     public void shouldForwardTo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        ControllerServlet servlet=ControllerServlet.createInstanceWithForward(SimpleControllerWrapper.createInstance(new SimpleForwardController()), "/viewForward.jsp", HttpMethod.values());
+        ControllerServlet servlet=new ControllerServlet(SimpleControllerWrapper.createInstance(new SimpleForwardController()));
+        servlet.setValidHttpMethods(HttpMethod.values());
+        servlet.setAfterControllerAction(new ControllerServlet.ForwardAction("/viewForward.jsp"));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");
@@ -38,7 +40,9 @@ public class TestForward {
     @Test
     public void shouldForwardToToo() throws Exception{
         RequestDispatcher dispatcher=mock(RequestDispatcher.class);
-        ControllerServlet servlet=ControllerServlet.createInstanceWithForward(new TypesafeForwardController(), "/viewForward.jsp", HttpMethod.values());
+        ControllerServlet servlet=new ControllerServlet(new TypesafeForwardController());
+        servlet.setValidHttpMethods(HttpMethod.values());
+        servlet.setAfterControllerAction(new ControllerServlet.ForwardAction("/viewForward.jsp"));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");

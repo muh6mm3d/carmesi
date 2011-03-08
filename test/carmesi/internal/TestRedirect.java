@@ -24,7 +24,9 @@ public class TestRedirect {
     
     @Test
     public void shouldRedirect() throws Exception{
-        ControllerServlet servlet=ControllerServlet.createInstanceWithRedirect(SimpleControllerWrapper.createInstance(new SimpleRedirectController()), "/viewRedirect.jsp", HttpMethod.values());
+        ControllerServlet servlet=new ControllerServlet(SimpleControllerWrapper.createInstance(new SimpleRedirectController()));
+        servlet.setValidHttpMethods(HttpMethod.values());
+        servlet.setAfterControllerAction(new ControllerServlet.RedirectAction("/viewRedirect.jsp"));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");
@@ -35,7 +37,9 @@ public class TestRedirect {
     
     @Test
     public void shouldRedirectToo() throws Exception{
-        ControllerServlet servlet=ControllerServlet.createInstanceWithRedirect(new TypesafeRedirectController(), "/viewRedirect.jsp", HttpMethod.values());
+        ControllerServlet servlet=new ControllerServlet(new TypesafeRedirectController());
+        servlet.setValidHttpMethods(HttpMethod.values());
+        servlet.setAfterControllerAction(new ControllerServlet.RedirectAction("/viewRedirect.jsp"));
         ServletConfig servletConfig = mock(ServletConfig.class);
         servlet.init(servletConfig);
         when(mocker.getRequest().getMethod()).thenReturn("GET");
