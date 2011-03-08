@@ -165,11 +165,15 @@ public class CarmesiInitializer implements ServletContextListener {
         }
         URL url=klass.getAnnotation(URL.class);
         HttpMethod[] validHttpMethods= url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
+        servlet=new ControllerServlet(controller);
+        servlet.setValidHttpMethods(validHttpMethods);
+        ControllerServlet.AfterControllerAction action=null;
         if(klass.isAnnotationPresent(ForwardTo.class)){
-            servlet=ControllerServlet.createInstanceWithForward(controller, klass.getAnnotation(ForwardTo.class).value(), validHttpMethods);
+            action=new ControllerServlet.ForwardAction(klass.getAnnotation(ForwardTo.class).value());
         }else if(klass.isAnnotationPresent(RedirectTo.class)){
-            servlet=ControllerServlet.createInstanceWithRedirect(controller, klass.getAnnotation(RedirectTo.class).value(), validHttpMethods);
+            action=new ControllerServlet.ForwardAction(klass.getAnnotation(RedirectTo.class).value());
         }
+        servlet.setAfterControllerAction(action);
         ServletRegistration.Dynamic dynamic = context.addServlet(klass.getSimpleName(), servlet);
         dynamic.addMapping(url.value());
     }

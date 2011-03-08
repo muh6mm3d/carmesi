@@ -19,32 +19,29 @@ import javax.servlet.http.HttpServletResponse;
  */
 class ControllerServlet extends HttpServlet{
     private Controller controller;
-    private HttpMethod[] validHttpMethods;
-    private String forwardValue;
-    private String redirectValue;
-    
-    static ControllerServlet createInstanceWithForward(Controller controller, String forwardValue, HttpMethod[] validHttpMethods){
-        assert controller != null;
-        assert forwardValue != null;
-        assert validHttpMethods != null;
-        ControllerServlet servlet=new ControllerServlet();
-        servlet.controller=controller;
-        servlet.forwardValue=forwardValue;
-        servlet.validHttpMethods=validHttpMethods;
-        return servlet;
-    }
-    
-    static ControllerServlet createInstanceWithRedirect(Controller controller, String redirectValue, HttpMethod[] validHttpMethods){
-        assert controller != null;
-        assert redirectValue != null;
-        assert validHttpMethods != null;
-        ControllerServlet servlet=new ControllerServlet();
-        servlet.controller=controller;
-        servlet.redirectValue=redirectValue;
-        servlet.validHttpMethods=validHttpMethods;
-        return servlet;
+    private HttpMethod[] validHttpMethods=HttpMethod.values();
+    private AfterControllerAction afterControllerAction;
+
+    public ControllerServlet(Controller controller) {
+        this.controller = controller;
     }
 
+    public AfterControllerAction getAfterControllerAction() {
+        return afterControllerAction;
+    }
+
+    public void setAfterControllerAction(AfterControllerAction afterControllerAction) {
+        this.afterControllerAction = afterControllerAction;
+    }
+
+    public HttpMethod[] getValidHttpMethods() {
+        return validHttpMethods;
+    }
+
+    public void setValidHttpMethods(HttpMethod[] validHttpMethods) {
+        this.validHttpMethods = validHttpMethods;
+    }
+    
     public Controller getController() {
         return controller;
     }
@@ -63,22 +60,6 @@ class ControllerServlet extends HttpServlet{
         }
     }
     
-    private void toView(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        assert request != null;
-        assert response != null;
-        if(forwardValue != null){
-            request.getRequestDispatcher(forwardValue).forward(request, response);
-        }else if(redirectValue != null){
-            String url=redirectValue;
-            if(url.startsWith("//")){
-                url=url.substring(2);
-            }else if(url.startsWith("/")){
-                url=request.getContextPath()+url;
-            }
-            response.sendRedirect(url);
-        }
-    }
-    
     protected final void executeController(HttpServletRequest request, HttpServletResponse response) throws Exception{
         assert request != null;
         assert response != null;
@@ -92,7 +73,9 @@ class ControllerServlet extends HttpServlet{
         try {
             validateHttpMethod(request);
             executeController(request, response);
-            toView(request, response);
+            if(afterControllerAction != null){
+                afterControllerAction.execute(request, response);
+            }
         } catch (IllegalAccessException ex) {
             throw new ServletException(ex);
         } catch (InvocationTargetException ex) {
@@ -104,6 +87,44 @@ class ControllerServlet extends HttpServlet{
         } catch (Exception ex) {
             throw new ServletException(ex);
         }
+    }
+    
+    static interface AfterControllerAction{
+        
+        void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException ; 
+        
+    }
+    
+    static class RedirectAction implements AfterControllerAction{
+        private String url;
+
+        public RedirectAction(String url) {
+            this.url = url;
+        }
+        
+        public void execute(HttpServletRequest request, HttpServletResponse response) throws IOException {
+            String tempUrl=url;
+            if(tempUrl.startsWith("//")){
+                tempUrl=tempUrl.substring(2);
+            }else if(tempUrl.startsWith("/")){
+                tempUrl=request.getContextPath()+tempUrl;
+            }
+            response.sendRedirect(tempUrl);
+        }
+        
+    }
+    
+    static class ForwardAction implements AfterControllerAction{
+        private String url;
+
+        public ForwardAction(String url) {
+            this.url = url;
+        }
+        
+        public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+            request.getRequestDispatcher(url).forward(request, response);
+        }
+        
     }
 
 }
