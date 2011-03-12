@@ -7,7 +7,7 @@ import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.BeforeURL;
 import carmesi.Controller;
 import carmesi.ForwardTo;
-import carmesi.HttpMethod;
+import carmesi.HttpMethods;
 import carmesi.RedirectTo;
 import carmesi.URL;
 import carmesi.convert.Converter;
@@ -164,9 +164,11 @@ public class CarmesiInitializer implements ServletContextListener {
             controller=simpleController;
         }
         URL url=klass.getAnnotation(URL.class);
-        HttpMethod[] validHttpMethods= url != null ? HttpMethod.values() : (url.httpMethods().length == 0 ? HttpMethod.values(): url.httpMethods());
         servlet=new ControllerServlet(controller);
-        servlet.setValidHttpMethods(validHttpMethods);
+        HttpMethods httpMethods=klass.getAnnotation(HttpMethods.class);
+        if(httpMethods != null){
+            servlet.setValidHttpMethods(httpMethods.value());
+        }
         ControllerServlet.AfterControllerAction action=null;
         if(klass.isAnnotationPresent(ForwardTo.class)){
             action=new ControllerServlet.ForwardAction(klass.getAnnotation(ForwardTo.class).value());
