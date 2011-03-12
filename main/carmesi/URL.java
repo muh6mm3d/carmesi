@@ -20,10 +20,4 @@ public @interface URL {
      */
     String value();
     
-    /**
-     * The valid http methods for invocating a controller.
-     * @return 
-     */
-    HttpMethod[] httpMethods() default {};
-    
 }
