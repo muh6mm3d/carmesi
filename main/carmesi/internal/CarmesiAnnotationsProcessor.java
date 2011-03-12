@@ -5,11 +5,20 @@ package carmesi.internal;
 import carmesi.BeforeURL;
 import carmesi.URL;
 import carmesi.convert.ConverterFor;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -24,7 +33,7 @@ import javax.tools.StandardLocation;
 /**
  * Generates automatically the config file that Carmesi requires.
  *
- * See the help of your IDE for configuring the processor. If you do manual compilation, see (TODO javac annotation configuration link).
+ * See the help of your IDE for configuring the processor. If you do manual compilation, see your compiler documentation.
  *
  * @author Victor Hugo Herrera Maldonado
  * @see CarmesiInitializer
@@ -33,7 +42,9 @@ import javax.tools.StandardLocation;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class CarmesiAnnotationsProcessor extends AbstractProcessor{
     private Set<String> classNames=new TreeSet<String>();
-
+    
+    private static final Logger logger=Logger.getLogger(CarmesiAnnotationsProcessor.class.getName());
+    
     @Override
     public final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         assert annotations != null;
@@ -71,6 +82,9 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
     }
     
     private void writeConfigFile() throws IOException{
+        if(classNames.isEmpty()){
+            return; //if there aren't any carmesi classes, the list is not generated
+        }
         Writer writer=null;
         FileObject resource = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", CarmesiInitializer.CONFIG_FILE_PATH, new Element[]{});
         writer=resource.openWriter();
@@ -79,7 +93,9 @@ public class CarmesiAnnotationsProcessor extends AbstractProcessor{
             writer.write("\n");
         }
         writer.close();
-        writer=null;
+        for(Handler h:logger.getHandlers()){
+            h.close();
+        }
     }
     
 }
