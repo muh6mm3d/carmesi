@@ -54,10 +54,11 @@ public class CarmesiInitializer implements ServletContextListener {
 
     public static final String CONFIG_FILE_PATH = "META-INF/carmesi.list";
     private ServletContext context;
-    
     private ObjectFactory controllerFactory;
     private Map<Class, Converter> converterMap=new HashMap<Class, Converter>();
     private Set<java.net.URL> configResources=new HashSet<java.net.URL>();
+    
+    private static final Logger logger=Logger.getLogger(CarmesiInitializer.class.getName());
 
     CarmesiInitializer(ObjectFactory factory, java.net.URL... configResources) {
         assert factory != null;
@@ -120,15 +121,22 @@ public class CarmesiInitializer implements ServletContextListener {
                 if (line.trim().startsWith("#")) {
                     continue;
                 }
-                Class klass = Class.forName(getBinaryClassname(line));
-                if (klass.isAnnotationPresent(URL.class)) {
-                    controllersURL.add(klass);
-                } else if (klass.isAnnotationPresent(BeforeURL.class)){
-                    controllersBeforeURL.add(klass);
-                } else if (klass.isAnnotationPresent(ConverterFor.class)){
-                    if(Converter.class.isAssignableFrom(klass)){
-                        addConverter((Class<? extends Converter>) klass);
+                try{
+                    Class klass = Class.forName(getBinaryClassname(line));
+                    if (klass.isAnnotationPresent(URL.class)) {
+                        controllersURL.add(klass);
+                        logger.log(Level.INFO, "Controller added: {0}", getBinaryClassname(line));
+                    } else if (klass.isAnnotationPresent(BeforeURL.class)){
+                        controllersBeforeURL.add(klass);
+                        logger.log(Level.INFO, "Controller added: {0}", getBinaryClassname(line));
+                    } else if (klass.isAnnotationPresent(ConverterFor.class)){
+                        if(Converter.class.isAssignableFrom(klass)){
+                            addConverter((Class<? extends Converter>) klass);
+                            logger.log(Level.INFO, "Converter added: {0}", getBinaryClassname(line));
+                        }
                     }
+                }catch(ClassNotFoundException ex){
+                    logger.log(Level.WARNING, "Class not found: {0}", getBinaryClassname(line));
                 }
             }
             reader.close();
