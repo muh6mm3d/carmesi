@@ -4,6 +4,7 @@ package carmesi.test;
 
 import carmesi.internal.RegistratorListenerTest;
 import carmesi.internal.TestForward;
+import carmesi.internal.TestAllowedHttpMethods;
 import carmesi.internal.TestRedirect;
 import carmesi.internal.simplecontrollers.TestCookieValue;
 import carmesi.internal.simplecontrollers.TestParameterMappingFromAttributes;
@@ -25,6 +26,6 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({RegistratorListenerTest.class, TestForward.class, TestRedirect.class, 
     TestParameterMappingFromAttributes.class, TestParameterMappingFromImplicitObjects.class, TestParameterMappingFromRequestParameters.class,
     TestParameterMappingFromRequestParametersCustom.class, TestProcessReturnValues.class, TestToJSON.class,
-    GsonSerializerTest.class, JacksonSerializerTest.class, TestCookieValue.class})
+    GsonSerializerTest.class, JacksonSerializerTest.class, TestCookieValue.class, TestAllowedHttpMethods.class})
 public class CarmesiTestSuite {
 }
