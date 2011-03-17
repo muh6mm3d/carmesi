@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Indicates that a controller is going to execute the controller when the specified url is requested.
+ * Indicates that a controller is going to be executed when the specified url is requested.
  *
  * @author Victor Hugo Herrera Maldonado
  */
