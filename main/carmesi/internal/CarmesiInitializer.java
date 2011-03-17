@@ -7,7 +7,7 @@ import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.BeforeURL;
 import carmesi.Controller;
 import carmesi.ForwardTo;
-import carmesi.HttpMethods;
+import carmesi.AllowedHttpMethods;
 import carmesi.RedirectTo;
 import carmesi.URL;
 import carmesi.convert.Converter;
@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -83,11 +84,15 @@ public class CarmesiInitializer implements ServletContextListener {
             }
         }
         controllerFactory.init();
-        java.net.URL defaultConfigResource = getClass().getResource("/" + CONFIG_FILE_PATH);
-        if(defaultConfigResource != null){
-            configResources.add(defaultConfigResource);
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if(classLoader == null){
+            classLoader=getClass().getClassLoader();
         }
         try {
+            Enumeration<java.net.URL> defaultConfigResources = classLoader.getResources(CONFIG_FILE_PATH);
+            while(defaultConfigResources.hasMoreElements()){
+                configResources.add(defaultConfigResources.nextElement());
+            }
             addClassesFromConfigResources();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -125,14 +130,11 @@ public class CarmesiInitializer implements ServletContextListener {
                     Class klass = Class.forName(getBinaryClassname(line));
                     if (klass.isAnnotationPresent(URL.class)) {
                         controllersURL.add(klass);
-                        logger.log(Level.INFO, "Controller added: {0}", getBinaryClassname(line));
                     } else if (klass.isAnnotationPresent(BeforeURL.class)){
                         controllersBeforeURL.add(klass);
-                        logger.log(Level.INFO, "Controller added: {0}", getBinaryClassname(line));
                     } else if (klass.isAnnotationPresent(ConverterFor.class)){
                         if(Converter.class.isAssignableFrom(klass)){
                             addConverter((Class<? extends Converter>) klass);
-                            logger.log(Level.INFO, "Converter added: {0}", getBinaryClassname(line));
                         }
                     }
                 }catch(ClassNotFoundException ex){
@@ -143,10 +145,17 @@ public class CarmesiInitializer implements ServletContextListener {
             
         }
         for(Class klass:controllersURL){
-            addControllerServlet((Class<Object>) klass);    
+            addControllerServlet((Class<Object>) klass);
+            logger.log(Level.INFO, "Controller added: {0}", klass);
         }
         for(Class klass:controllersBeforeURL){
             addControllerFilter((Class<Object>) klass);
+            logger.log(Level.INFO, "Controller added: {0}", klass);
+        }
+        if(logger.isLoggable(Level.INFO)){
+            for(Converter converter:converterMap.values()){
+                logger.log(Level.INFO, "Converter added: {0}", converter.getClass());
+            }
         }
     }
 
@@ -173,7 +182,7 @@ public class CarmesiInitializer implements ServletContextListener {
         }
         URL url=klass.getAnnotation(URL.class);
         servlet=new ControllerServlet(controller);
-        HttpMethods httpMethods=klass.getAnnotation(HttpMethods.class);
+        AllowedHttpMethods httpMethods=klass.getAnnotation(AllowedHttpMethods.class);
         if(httpMethods != null){
             servlet.setValidHttpMethods(httpMethods.value());
         }
