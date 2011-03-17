@@ -58,12 +58,6 @@ class ControllerServlet extends HttpServlet{
         return validHttpMethod;
     }
     
-    protected final void executeController(HttpServletRequest request, HttpServletResponse response) throws Exception{
-        assert request != null;
-        assert response != null;
-        controller.execute(request, response);
-    }
-    
     @Override
     protected final void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         assert request != null;
@@ -73,7 +67,7 @@ class ControllerServlet extends HttpServlet{
                 response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
                 return;
             }
-            executeController(request, response);
+            controller.execute(request, response);
             if(afterControllerAction != null){
                 afterControllerAction.execute(request, response);
             }
