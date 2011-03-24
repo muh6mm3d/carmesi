@@ -15,7 +15,7 @@ import carmesi.SessionAttribute;
 import carmesi.CookieValue;
 import carmesi.ToJSON;
 import carmesi.convert.ConverterException;
-import carmesi.jsonserializers.JSONSerializer;
+import carmesi.json.JSONSerializer;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -37,9 +38,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -171,14 +171,15 @@ public class SimpleControllerWrapper implements Controller{
     
     private Result execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
         assert context != null;
+        
+        /* Parameter injection */
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Object[] actualParameters=new Object[parameterTypes.length];
-        
-        /* Iterates each parameter */
         for(int i=0; i < parameterTypes.length; i++){
             actualParameters[i]=getActualParameter(new TargetInfo(parameterTypes[i], parameterAnnotations[i]), context);
         }
+        
         return new Result(method.invoke(simpleController, actualParameters), method.getReturnType().equals(Void.TYPE), context);
     }
 
@@ -188,9 +189,9 @@ public class SimpleControllerWrapper implements Controller{
         /* Definir por tipos */
         if(parameterInfo.getType().equals(ServletContext.class)){
             return context.getServletContext();
-        }else if(ServletRequest.class.isAssignableFrom(parameterInfo.getType())){
+        }else if(HttpServletRequest.class.isAssignableFrom(parameterInfo.getType())){
             return context.getRequest();
-        }else if(ServletResponse.class.isAssignableFrom(parameterInfo.getType())){
+        }else if(HttpServletResponse.class.isAssignableFrom(parameterInfo.getType())){
             return context.getResponse();
         }else if(HttpSession.class.isAssignableFrom(parameterInfo.getType())){
             return context.getRequest().getSession();
@@ -273,6 +274,8 @@ public class SimpleControllerWrapper implements Controller{
             }
         }else if(targetType.equals(BigDecimal.class)){
             return new BigDecimal(string);
+        }else if(targetType.equals(BigInteger.class)){
+            return new BigInteger(string);
         }else if(targetType.equals(boolean.class) || targetType.equals(Boolean.class)){
             return Boolean.valueOf(string);
         }else if(targetType.equals(String.class)){
@@ -329,24 +332,43 @@ public class SimpleControllerWrapper implements Controller{
      * Create an instance of SimpleControllerWrapper with the specified POJO controller.
      * 
      * @param <T>
-     * @param simpleController A POJO for using it as a Controller.
+     * @param pojoController A POJO for using it as a Controller.
      * @return
      * @throws NullPointerException if object is null.
      */
-    public static <T> SimpleControllerWrapper createInstance(Object simpleController) throws  NullPointerException{
-        if(simpleController == null){
+    public static <T> SimpleControllerWrapper createInstance(Object pojoController) throws  NullPointerException{
+        if(pojoController == null){
             throw new NullPointerException("controller object is null");
         }
         List<Method> methods=new LinkedList<Method>();
-        for(Method method:simpleController.getClass().getDeclaredMethods()){
-            if(Modifier.isPublic(method.getModifiers()) && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)){
+        for(Method method:pojoController.getClass().getDeclaredMethods()){
+            if(Modifier.isPublic(method.getModifiers()) 
+                    && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)
+                    && !method.isAnnotationPresent(Resource.class) && !isAnnotationPresent(method, "javax.ejb.EJB") && !isAnnotationPresent(method, "javax.inject.Inject")){
                 methods.add(method);
             }
         }
         if(methods.size() != 1){
             throw new IllegalArgumentException("Controller must have one and only one public method.");
         }
-        return new SimpleControllerWrapper(simpleController, methods.get(0));
+        return new SimpleControllerWrapper(pojoController, methods.get(0));
+    }
+    
+    /**
+     * Uses reflexion to test for an annotation with the given class name. 
+     * 
+     * It's used because the annotation class could not exists in the executing environment (For example: annotation javax.ejb.EJB in Tomcat).
+     * 
+     * @return 
+     */
+    
+    private static boolean isAnnotationPresent(Method method, String annotationClassname){
+        try {
+            Class<? extends Annotation> annotation = Class.forName(annotationClassname).asSubclass(Annotation.class);
+            return method.isAnnotationPresent(annotation);
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
     }
 
     public class Result{
