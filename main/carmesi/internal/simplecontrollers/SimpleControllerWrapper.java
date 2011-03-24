@@ -344,7 +344,8 @@ public class SimpleControllerWrapper implements Controller{
         for(Method method:pojoController.getClass().getDeclaredMethods()){
             if(Modifier.isPublic(method.getModifiers()) 
                     && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)
-                    && !method.isAnnotationPresent(Resource.class) && !isAnnotationPresent(method, "javax.ejb.EJB") && !isAnnotationPresent(method, "javax.inject.Inject")){
+                    && !method.isAnnotationPresent(Resource.class) && !isAnnotationPresent(method, "javax.ejb.EJB") && !isAnnotationPresent(method, "javax.inject.Inject")
+                    && !isAnnotationPresent(method, "javax.xml.ws.WebServiceRef") ){
                 methods.add(method);
             }
         }
