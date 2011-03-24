@@ -2,7 +2,7 @@
 
 package carmesi.internal;
 
-import carmesi.jsonserializers.JSONSerializer;
+import carmesi.json.JSONSerializer;
 import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
 import carmesi.BeforeURL;
 import carmesi.Controller;
@@ -218,7 +218,7 @@ public class CarmesiInitializer implements ServletContextListener {
         try {
             controller.setAutoRequestAttribute(Boolean.parseBoolean(getParameter("carmesi.requestAttribute.autoGeneration", "true")));
             controller.setDefaultCookieMaxAge(Integer.parseInt(getParameter("carmesi.cookie.maxAge", "-1")));
-            String jsonSerializerClassname=getParameter("carmesi.json.serializer", "carmesi.jsonserializers.JacksonSerializer");
+            String jsonSerializerClassname=getParameter("carmesi.json.serializer", "carmesi.json.JacksonSerializer");
             Class<?> serializerKlass = Class.forName(jsonSerializerClassname);
             if(JSONSerializer.class.isAssignableFrom(serializerKlass)){
                 controller.setJSONSerializer(serializerKlass.asSubclass(JSONSerializer.class).newInstance());
