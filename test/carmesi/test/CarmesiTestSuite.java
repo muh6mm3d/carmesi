@@ -13,8 +13,8 @@ import carmesi.internal.simplecontrollers.TestParameterMappingFromRequestParamet
 import carmesi.internal.simplecontrollers.TestParameterMappingFromRequestParametersCustom;
 import carmesi.internal.simplecontrollers.TestProcessReturnValues;
 import carmesi.internal.simplecontrollers.TestToJSON;
-import carmesi.jsonserializers.GsonSerializerTest;
-import carmesi.jsonserializers.JacksonSerializerTest;
+import carmesi.json.GsonSerializerTest;
+import carmesi.json.JacksonSerializerTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -26,6 +26,6 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({RegistratorListenerTest.class, TestForward.class, TestRedirect.class, 
     TestParameterMappingFromAttributes.class, TestParameterMappingFromImplicitObjects.class, TestParameterMappingFromRequestParameters.class,
     TestParameterMappingFromRequestParametersCustom.class, TestProcessReturnValues.class, TestToJSON.class,
-    GsonSerializerTest.class, JacksonSerializerTest.class, TestCookieValue.class, TestAllowedHttpMethods.class})
+    GsonSerializerTest.class, JacksonSerializerTest.class, TestCookieValue.class, TestAllowedHttpMethods.class, carmesi.internal.simplecontrollers.SimpleControllerWrapperTest.class})
 public class CarmesiTestSuite {
 }
