@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Represents an attribute in ServletRequest. If used in method parameter, the value of parameter is retrieved from the ServletRequest.
- * If used in method, the return value of the method is set in the ServletRequest.
+ * Represents an attribute in the request. If used in method parameter, the value of parameter is retrieved from the request.
+ * If used in method, the return value of the method is set in the request.
  * </p>
  * @author Victor Hugo Herrera Maldonado
  */
