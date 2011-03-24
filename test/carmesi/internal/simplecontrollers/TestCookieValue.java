@@ -59,7 +59,7 @@ public class TestCookieValue {
     
     @Test
     public void shouldConvertFromAndToCookieToo() throws Exception{
-        final String stringA="whatever";
+        final String stringA="anyValue";
         SimpleControllerWrapper controller=SimpleControllerWrapper.createInstance(new Object(){
             
             @CookieValue("result")

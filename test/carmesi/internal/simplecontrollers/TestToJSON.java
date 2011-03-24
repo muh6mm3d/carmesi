@@ -2,8 +2,7 @@
 
 package carmesi.internal.simplecontrollers;
 
-import carmesi.internal.simplecontrollers.SimpleControllerWrapper;
-import carmesi.jsonserializers.JSONSerializer;
+import carmesi.json.JSONSerializer;
 import java.io.PrintWriter;
 import carmesi.ToJSON;
 import carmesi.internal.RequestResponseMocker;
