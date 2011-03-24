@@ -9,6 +9,7 @@ import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.xml.ws.WebServiceRef;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -93,6 +94,21 @@ public class SimpleControllerWrapperTest {
         assertNotNull(instance);
     }
     
+    @Test
+    public void shouldCreateInstanceWithWebServiceRefInjection() {
+        SimpleControllerWrapper instance =
+            SimpleControllerWrapper.createInstance(new Object() {
+
+                @WebServiceRef
+                public void setA(Object a) {
+                }
+
+                public void execute() {
+                }
+            });
+        assertNotNull(instance);
+    }
+    
     @Test(expected=IllegalArgumentException.class)
     public void shouldNotCreateInstance() {
         SimpleControllerWrapper instance =
@@ -120,6 +136,11 @@ public class SimpleControllerWrapperTest {
                 
                 @EJB
                 public void setEJB(Object a) {
+                    
+                }
+                
+                @WebServiceRef
+                public void setWebServiceRef(Object a){
                     
                 }
 
