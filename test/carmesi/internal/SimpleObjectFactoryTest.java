@@ -217,11 +217,13 @@ public class SimpleObjectFactoryTest {
         
         @PostConstruct
         public void initChild(){
+            assertTrue(initInvoked);
             initChildInvoked=true;
         }
         
         @PreDestroy
         public void destroyChild(){
+            assertFalse(destroyInvoked);
             destroyChildInvoked=true;
         }
         
