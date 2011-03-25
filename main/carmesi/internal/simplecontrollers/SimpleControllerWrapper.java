@@ -252,7 +252,6 @@ public class SimpleControllerWrapper implements Controller{
     }
     
     private Object convertStringToType(String string, TargetInfo parameterInfo){
-        assert string != null;
         assert parameterInfo != null;
         Class<?> targetType=parameterInfo.getType();
         Converter<?> converter = converters.get(parameterInfo.getType());
