@@ -28,11 +28,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,6 +60,12 @@ public class SimpleControllerWrapper implements Controller{
     private boolean autoRequestAttribute=true;
     private int defaultCookieMaxAge=-1;
     private JSONSerializer jsonSerializer;
+    
+    private static ResourceBundle messagesBundle;
+    
+    static {
+        messagesBundle=ResourceBundle.getBundle("carmesi.internal.injectionErrorMessages");
+    }
     
     private SimpleControllerWrapper(Object simpleController, Method m){
         assert simpleController != null;
@@ -168,6 +177,37 @@ public class SimpleControllerWrapper implements Controller{
         return result;
     }
 
+    private void checkValidAsignation(TargetInfo parameterInfo, Object attributeValue, String attributeName, String attributeType) throws IllegalArgumentException {
+        Class type = parameterInfo.getType();
+        if(type.isPrimitive()){
+            if(attributeValue == null){
+                String message=formatMessage(messagesBundle.getString("nullPrimitiveAttribute"), attributeType, attributeName, parameterInfo.getType().getName());
+                throw new IllegalArgumentException(message);
+            }
+            if(type.equals(int.class)){
+                type=Integer.class;
+            }else if(type.equals(byte.class)){
+                type=Byte.class;
+            }else if(type.equals(short.class)){
+                type=Short.class;
+            }else if(type.equals(long.class)){
+                type=Long.class;
+            }else if(type.equals(float.class)){
+                type=Float.class;
+            }else if(type.equals(double.class)){
+                type=Double.class;
+            }else if(type.equals(boolean.class)){
+                type=Boolean.class;
+            }else if(type.equals(char.class)){
+                type=Character.class;
+            }
+        }
+        if(attributeValue != null && ! type.isAssignableFrom(attributeValue.getClass())){
+            String message=formatMessage(messagesBundle.getString("attribute"), attributeType, attributeName, attributeValue.getClass().getName(), parameterInfo.getType().getName());
+            throw new IllegalArgumentException(message);
+        }
+    }
+
     
     private Result execute(ExecutionContext context) throws IllegalAccessException, InvocationTargetException, InstantiationException, IntrospectionException {
         assert context != null;
@@ -182,11 +222,11 @@ public class SimpleControllerWrapper implements Controller{
         
         return new Result(method.invoke(simpleController, actualParameters), method.getReturnType().equals(Void.TYPE), context);
     }
-
+    
     private Object getActualParameter(TargetInfo parameterInfo, ExecutionContext context) throws InstantiationException, IllegalAccessException, IntrospectionException, InvocationTargetException {
         assert parameterInfo != null;
         assert context != null;
-        /* Definir por tipos */
+        /* Injection by type */
         if(parameterInfo.getType().equals(ServletContext.class)){
             return context.getServletContext();
         }else if(HttpServletRequest.class.isAssignableFrom(parameterInfo.getType())){
@@ -196,46 +236,88 @@ public class SimpleControllerWrapper implements Controller{
         }else if(HttpSession.class.isAssignableFrom(parameterInfo.getType())){
             return context.getRequest().getSession();
         }else{
-            /* Definir por anotaciones */
+            /* Injection by annotations */
             if(parameterInfo.isAnnotationPresent(RequestBean.class)){
                 return fillBeanWithParameters(parameterInfo.getType().newInstance(), context.getRequest());
             }
             if(parameterInfo.isAnnotationPresent(RequestParameter.class)){
-                RequestParameter requestParameter=parameterInfo.getAnnotation(RequestParameter.class);
+                String requestParameterName=parameterInfo.getAnnotation(RequestParameter.class).value();
                 if(parameterInfo.getType().isArray()){
-                    String[] parameterValues = context.getRequest().getParameterValues(requestParameter.value());
+                    String[] parameterValues = context.getRequest().getParameterValues(requestParameterName);
                     Object array=null;
                     if(parameterValues != null){
-                        array=asArray(parameterValues, parameterInfo);
+                        try{
+                            array=asArray(parameterValues, parameterInfo);
+                        }catch(IllegalArgumentException ex){
+                            String message=formatMessage(messagesBundle.getString("parameter"), "request", requestParameterName, Arrays.toString(parameterValues), parameterInfo.getType());
+                            throw new IllegalArgumentException(message, ex);
+                        }
                     }
                     return array;
                 }else{
-                    return convertStringToType(context.getRequest().getParameter(requestParameter.value()), parameterInfo);
+                    String requestParameterValue = context.getRequest().getParameter(requestParameterName);
+                    try{
+                        return convertStringToType(requestParameterValue, parameterInfo);
+                    }catch(IllegalArgumentException ex){
+                        String message=formatMessage(messagesBundle.getString("parameter"), "request", requestParameterName, requestParameterValue, parameterInfo.getType());
+                        throw new IllegalArgumentException(message, ex);
+                    }catch(ConverterException ex){
+                        String message=formatMessage(messagesBundle.getString("parameter"), "request", requestParameterName, requestParameterValue, parameterInfo.getType());
+                        throw new IllegalArgumentException(message, ex);
+                    }
                 }
             }
             if(parameterInfo.isAnnotationPresent(RequestAttribute.class)){
-                return context.getRequest().getAttribute(parameterInfo.getAnnotation(RequestAttribute.class).value());
+                String attributeName = parameterInfo.getAnnotation(RequestAttribute.class).value();
+                Object attributeValue = context.getRequest().getAttribute(attributeName);
+                checkValidAsignation(parameterInfo, attributeValue, attributeName, "request");
+                return attributeValue;
             }
             if(parameterInfo.isAnnotationPresent(SessionAttribute.class)){
-                return context.getRequest().getSession().getAttribute(parameterInfo.getAnnotation(SessionAttribute.class).value());
+                String attributeName = parameterInfo.getAnnotation(SessionAttribute.class).value();
+                Object attributeValue = context.getRequest().getSession().getAttribute(attributeName);
+                checkValidAsignation(parameterInfo, attributeValue, attributeName, "session");
+                return attributeValue;
             }
             if(parameterInfo.isAnnotationPresent(ApplicationAttribute.class)){
-                return context.getServletContext().getAttribute(parameterInfo.getAnnotation(ApplicationAttribute.class).value());
+                String attributeName = parameterInfo.getAnnotation(ApplicationAttribute.class).value();
+                Object attributeValue = context.getServletContext().getAttribute(attributeName);
+                checkValidAsignation(parameterInfo, attributeValue, attributeName, "application");
+                return attributeValue;
             }
             if(parameterInfo.isAnnotationPresent(ContextParameter.class)){
-                return convertStringToType(context.getServletContext().getInitParameter(parameterInfo.getAnnotation(ContextParameter.class).value()), parameterInfo);
+                ContextParameter contextParameter = parameterInfo.getAnnotation(ContextParameter.class);
+                String contextParameterValue = context.getServletContext().getInitParameter(contextParameter.value());
+                try{
+                    return convertStringToType(contextParameterValue, parameterInfo);
+                }catch(IllegalArgumentException ex){
+                    String message=formatMessage(messagesBundle.getString("parameter"), "context", contextParameter.value(), contextParameterValue, parameterInfo.getType());
+                    throw new IllegalArgumentException(message, ex);
+                }catch(ConverterException ex){
+                    String message=formatMessage(messagesBundle.getString("parameter"), "context", contextParameter.value(), contextParameterValue, parameterInfo.getType());
+                    throw new IllegalArgumentException(message, ex);
+                }
             }
             if(parameterInfo.isAnnotationPresent(CookieValue.class)){
+                String cookieName=parameterInfo.getAnnotation(CookieValue.class).value();
                 Cookie[] cookies = context.getRequest().getCookies();
-                String string=null;
+                String cookieValue=null;
                 if(cookies != null){
                     for(Cookie c:cookies){
-                        if(c.getName().equals(parameterInfo.getAnnotation(CookieValue.class).value())){
-                            string=c.getValue();
+                        if(c.getName().equals(cookieName)){
+                            cookieValue=c.getValue();
                         }
                     }
                 }
-                return convertStringToType(string, parameterInfo);
+                try{
+                    return convertStringToType(cookieValue, parameterInfo);
+                }catch(IllegalArgumentException ex){
+                    String message=formatMessage(messagesBundle.getString("cookie"), cookieName, cookieValue, parameterInfo.getType());
+                    throw new IllegalArgumentException(message, ex);
+                }catch(ConverterException ex){
+                    String message=formatMessage(messagesBundle.getString("cookie"), cookieName, cookieValue, parameterInfo.getType());
+                    throw new IllegalArgumentException(message, ex);
+                }
             }
             return null;
         }
@@ -246,16 +328,28 @@ public class SimpleControllerWrapper implements Controller{
         assert parameterInfo != null;
         Object array = Array.newInstance(parameterInfo.getType().getComponentType(), stringValues.length);
         for(int i=0; i < stringValues.length; i++){
-            Array.set(array, i, convertStringToType(stringValues[i], new TargetInfo(parameterInfo.getType().getComponentType(), parameterInfo.getAnnotations())));
+            try{
+                Array.set(array, i, convertStringToType(stringValues[i], new TargetInfo(parameterInfo.getType().getComponentType(), parameterInfo.getAnnotations())));
+            }catch(IllegalArgumentException ex){
+                String message=formatMessage(messagesBundle.getString("array"), stringValues[i], parameterInfo.getType());
+                throw new IllegalArgumentException(message, ex);
+            }catch(ConverterException ex){
+                String message=formatMessage(messagesBundle.getString("array"), stringValues[i], parameterInfo.getType());
+                throw new IllegalArgumentException(message, ex);
+            }
         }
         return array;
     }
     
-    private Object convertStringToType(String string, TargetInfo parameterInfo){
+    private Object convertStringToType(String string, TargetInfo parameterInfo) throws ConverterException{
         assert parameterInfo != null;
         Class<?> targetType=parameterInfo.getType();
         Converter<?> converter = converters.get(parameterInfo.getType());
         if(string == null){
+            if(parameterInfo.getType().isPrimitive()){
+                String message=formatMessage(messagesBundle.getString("nullPrimitiveConversion"), parameterInfo.getType());
+                throw new IllegalArgumentException(message);
+            }
             return null;
         }else if(targetType.equals(byte.class) || targetType.equals(Byte.class)){
             return Byte.valueOf(string);
@@ -280,11 +374,7 @@ public class SimpleControllerWrapper implements Controller{
         }else if(targetType.equals(String.class)){
             return string;
         }else if(converter != null){
-            try{
-                return converter.convertToObject(string, parameterInfo);
-            }catch(ConverterException ex){
-                throw new RuntimeException(ex);
-            }
+            return converter.convertToObject(string, parameterInfo);
         }else{
             Method[] methods = targetType.getDeclaredMethods();
             for(Method m: methods){
@@ -304,7 +394,7 @@ public class SimpleControllerWrapper implements Controller{
         }
         return null;
     }
-    
+
     private Object fillBeanWithParameters(Object object, HttpServletRequest request) throws IntrospectionException, IllegalAccessException, InvocationTargetException{
         assert object != null;
         assert request != null;
@@ -315,10 +405,20 @@ public class SimpleControllerWrapper implements Controller{
                String[] parameterValues = request.getParameterValues(descriptor.getName());
                if(parameterValues != null){
                    Object propertyValue;
-                   if(descriptor.getPropertyType().isArray()){
-                       propertyValue=asArray(parameterValues, new TargetInfo(descriptor.getPropertyType(), descriptor.getPropertyType().getAnnotations()));
-                   }else{
-                       propertyValue=convertStringToType(parameterValues[0], new TargetInfo(descriptor.getPropertyType(), descriptor.getPropertyType().getAnnotations()));
+                   try{
+                       if(descriptor.getPropertyType().isArray()){
+                           propertyValue=asArray(parameterValues, new TargetInfo(descriptor.getPropertyType(), descriptor.getPropertyType().getAnnotations()));
+                       }else{
+                            propertyValue=convertStringToType(parameterValues[0], new TargetInfo(descriptor.getPropertyType(), descriptor.getPropertyType().getAnnotations()));
+                       }
+                   }catch(IllegalArgumentException ex){
+                       String value=descriptor.getPropertyType().isArray() ? Arrays.toString(parameterValues) : parameterValues[0];
+                       String message=formatMessage(messagesBundle.getString("property"), descriptor.getName(), value, object.getClass(), descriptor.getName(), descriptor.getPropertyType());
+                       throw new IllegalArgumentException(message, ex);
+                   }catch(ConverterException ex){
+                       String value=descriptor.getPropertyType().isArray() ? Arrays.toString(parameterValues) : parameterValues[0];
+                       String message=formatMessage(messagesBundle.getString("property"), descriptor.getName(), value, object.getClass(), descriptor.getName(), descriptor.getPropertyType());
+                       throw new IllegalArgumentException(message, ex);
                    }
                    descriptor.getWriteMethod().invoke(object, propertyValue);
                }
@@ -369,6 +469,11 @@ public class SimpleControllerWrapper implements Controller{
         } catch (ClassNotFoundException ex) {
             return false;
         }
+    }
+
+    private String formatMessage(String messagePattern, Object... values) {
+        MessageFormat formatter=new MessageFormat(messagePattern);
+        return formatter.format(values);
     }
 
     public class Result{
