@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.Stack;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -85,8 +87,8 @@ class SimpleObjectFactory implements ObjectFactory {
     private static class CallbackWrapper {
 
         private Object object;
-        private List<Method> postConstructMethods = new LinkedList<Method>();
-        private List<Method> preDestroyMethods = new LinkedList<Method>();
+        private Stack<Method> postConstructMethods = new Stack<Method>();
+        private Queue<Method> preDestroyMethods = new LinkedList<Method>();
 
         public CallbackWrapper(Object o) {
             object = o;
@@ -94,7 +96,7 @@ class SimpleObjectFactory implements ObjectFactory {
                 Method method;
                 method = getCallbackMethod(klass, PostConstruct.class);
                 if (method != null) {
-                    postConstructMethods.add(method);
+                    postConstructMethods.push(method);
                 }
                 method = getCallbackMethod(klass, PreDestroy.class);
                 if (method != null) {
@@ -105,8 +107,8 @@ class SimpleObjectFactory implements ObjectFactory {
 
         public void callPostConstruct() {
             try{
-                for(Method method:postConstructMethods){
-                    invokeCallbackMethod(method);
+                while(!postConstructMethods.isEmpty()){
+                    invokeCallbackMethod(postConstructMethods.pop());
                 }
             } catch(IllegalAccessException ex){
                 throw new AssertionError();
@@ -117,8 +119,8 @@ class SimpleObjectFactory implements ObjectFactory {
 
         public void callPreDestroy() {
             try{
-                for(Method method:preDestroyMethods){
-                    invokeCallbackMethod(method);
+                while(!preDestroyMethods.isEmpty()){
+                    invokeCallbackMethod(preDestroyMethods.remove());
                 }
             } catch(IllegalAccessException ex){
                 throw new AssertionError();
