@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.xml.ws.WebServiceRef;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  *
@@ -28,6 +29,8 @@ public class SimpleControllerWrapperTest {
                 }
             });
         assertNotNull(instance);
+        assertNotNull(instance.getSimpleController());
+        assertThat(instance.getMethod().getName(), is("execute"));
     }
 
     @Test
@@ -47,6 +50,8 @@ public class SimpleControllerWrapperTest {
                 }
             });
         assertNotNull(instance);
+        assertNotNull(instance.getSimpleController());
+        assertThat(instance.getMethod().getName(), is("execute"));
     }
 
     @Test
@@ -62,6 +67,8 @@ public class SimpleControllerWrapperTest {
                 }
             });
         assertNotNull(instance);
+        assertNotNull(instance.getSimpleController());
+        assertThat(instance.getMethod().getName(), is("execute"));
     }
 
     @Test
@@ -77,6 +84,8 @@ public class SimpleControllerWrapperTest {
                 }
             });
         assertNotNull(instance);
+        assertNotNull(instance.getSimpleController());
+        assertThat(instance.getMethod().getName(), is("execute"));
     }
 
     @Test
@@ -92,6 +101,8 @@ public class SimpleControllerWrapperTest {
                 }
             });
         assertNotNull(instance);
+        assertNotNull(instance.getSimpleController());
+        assertThat(instance.getMethod().getName(), is("execute"));
     }
     
     @Test
@@ -107,6 +118,8 @@ public class SimpleControllerWrapperTest {
                 }
             });
         assertNotNull(instance);
+        assertNotNull(instance.getSimpleController());
+        assertThat(instance.getMethod().getName(), is("execute"));
     }
     
     @Test(expected=IllegalArgumentException.class)
