@@ -13,7 +13,6 @@ import java.lang.annotation.Target;
  *
  * @author Victor Hugo Herrera Maldonado
  *
- * TODO resolutions rules or precedence.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
