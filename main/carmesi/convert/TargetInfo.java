@@ -72,6 +72,7 @@ public class TargetInfo {
      * @param annotationClass Type of the annotation
      * @return Annotation
      */
+    @SuppressWarnings("unchecked")
     public <A extends Annotation> A getAnnotation(Class<A> annotationClass){
         for(Annotation a: annotations){
             if(a.annotationType().equals(annotationClass)){
