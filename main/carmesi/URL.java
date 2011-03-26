@@ -16,7 +16,7 @@ public @interface URL {
     /**
      * The string url to execute the controller.
      * 
-     * @return
+     * @return The url for the controller.
      */
     String value();
     

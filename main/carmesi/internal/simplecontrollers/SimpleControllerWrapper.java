@@ -105,7 +105,7 @@ public class SimpleControllerWrapper implements Controller{
      * @param <T>
      * @param klass
      * @throws NullPointerException if klass is null
-     * @return 
+     * @return  The converter for the given class or null if there aren't any registered.
      */
     @SuppressWarnings("unchecked")
     public <T> Converter<T> getConverter(Class<T> klass) throws NullPointerException {
@@ -131,7 +131,7 @@ public class SimpleControllerWrapper implements Controller{
     /**
      * 
      * @param defaultCookieMaxAge 
-     * @see Cookie.setMaxAge
+     * @see javax.servlet.http.Cookie.setMaxAge method
      */
     public void setDefaultCookieMaxAge(int defaultCookieMaxAge) {
         this.defaultCookieMaxAge = defaultCookieMaxAge;
@@ -441,7 +441,7 @@ public class SimpleControllerWrapper implements Controller{
      * 
      * @param <T>
      * @param pojoController A POJO for using it as a Controller.
-     * @return
+     * @return an instance of this class.
      * @throws NullPointerException if object is null.
      */
     public static <T> SimpleControllerWrapper createInstance(Object pojoController) throws  NullPointerException{
@@ -515,7 +515,7 @@ public class SimpleControllerWrapper implements Controller{
         /**
          * The value of the result.
          * 
-         * @return
+         * @return The value of the result.
          */
         public Object getValue() {
             return value;

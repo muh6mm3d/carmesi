@@ -16,7 +16,7 @@ public interface Converter<T> {
      * @param stringValue
      * @param info Contains the type and annotations of the target.
      * @throws ConverterException if the string can not be converted.
-     * @return 
+     * @return The converted object.
      */
     public T convertToObject(String stringValue, TargetInfo info) throws ConverterException;
 

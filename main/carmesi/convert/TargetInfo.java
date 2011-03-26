@@ -52,11 +52,11 @@ public class TargetInfo {
     /**
      * Indicates if the target contains an annotation of the given type.
      * 
-     * @param <A>
+     * @param <T>
      * @param annotationClass
-     * @return 
+     * @return true is the target contains an annotation with the specified type.
      */
-    public <A extends Annotation> boolean isAnnotationPresent(Class<A> annotationClass){
+    public <T extends Annotation> boolean isAnnotationPresent(Class<T> annotationClass){
         for(Annotation a: annotations){
             if(a.annotationType().equals(annotationClass)){
                 return true;
@@ -68,15 +68,15 @@ public class TargetInfo {
     /**
      * Get the annotation with type in the target if exists.
      * 
-     * @param <A>
+     * @param <T>
      * @param annotationClass Type of the annotation
      * @return Annotation
      */
     @SuppressWarnings("unchecked")
-    public <A extends Annotation> A getAnnotation(Class<A> annotationClass){
+    public <T extends Annotation> T getAnnotation(Class<T> annotationClass){
         for(Annotation a: annotations){
             if(a.annotationType().equals(annotationClass)){
-                return (A) a;
+                return (T) a;
             }
         }
         return null;
