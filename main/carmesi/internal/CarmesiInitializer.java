@@ -56,7 +56,7 @@ public class CarmesiInitializer implements ServletContextListener {
     public static final String CONFIG_FILE_PATH = "META-INF/carmesi.list";
     private ServletContext context;
     private ObjectFactory controllerFactory;
-    private Map<Class, Converter> converterMap=new HashMap<Class, Converter>();
+    private Map<Class<?>, Converter<?>> converterMap=new HashMap<Class<?>, Converter<?>>();
     private Set<java.net.URL> configResources=new HashSet<java.net.URL>();
     
     private static final Logger logger=Logger.getLogger(CarmesiInitializer.class.getName());
@@ -115,9 +115,10 @@ public class CarmesiInitializer implements ServletContextListener {
         controllerFactory.dispose();
     }
     
+    @SuppressWarnings("unchecked")
     private void addClassesFromConfigResources() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        Set<Class> controllersURL=new HashSet<Class>();
-        Set<Class> controllersBeforeURL=new HashSet<Class>();
+        Set<Class<?>> controllersURL=new HashSet<Class<?>>();
+        Set<Class<?>> controllersBeforeURL=new HashSet<Class<?>>();
         for(java.net.URL url:configResources){
             InputStream input=url.openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -127,14 +128,14 @@ public class CarmesiInitializer implements ServletContextListener {
                     continue;
                 }
                 try{
-                    Class klass = Class.forName(getBinaryClassname(line));
+                    Class<?> klass = Class.forName(getBinaryClassname(line));
                     if (klass.isAnnotationPresent(URL.class)) {
                         controllersURL.add(klass);
                     } else if (klass.isAnnotationPresent(BeforeURL.class)){
                         controllersBeforeURL.add(klass);
                     } else if (klass.isAnnotationPresent(ConverterFor.class)){
                         if(Converter.class.isAssignableFrom(klass)){
-                            addConverter((Class<? extends Converter>) klass);
+                            addConverter((Class<? extends Converter<?>>) klass);
                         }
                     }
                 }catch(ClassNotFoundException ex){
@@ -144,12 +145,12 @@ public class CarmesiInitializer implements ServletContextListener {
             reader.close();
             
         }
-        for(Class klass:controllersURL){
-            addControllerServlet((Class<Object>) klass);
+        for(Class<?> klass:controllersURL){
+            addControllerServlet(klass);
             logger.log(Level.INFO, "Controller added: {0}", klass);
         }
-        for(Class klass:controllersBeforeURL){
-            addControllerFilter((Class<Object>) klass);
+        for(Class<?> klass:controllersBeforeURL){
+            addControllerFilter(klass);
             logger.log(Level.INFO, "Controller added: {0}", klass);
         }
         if(logger.isLoggable(Level.INFO)){
@@ -169,7 +170,7 @@ public class CarmesiInitializer implements ServletContextListener {
         }
     }
     
-    private void addControllerServlet(Class<Object> klass) throws InstantiationException, IllegalAccessException {
+    private void addControllerServlet(Class<?> klass) throws InstantiationException, IllegalAccessException {
         assert klass != null;
         ControllerServlet servlet=null;
         Controller controller;
@@ -197,7 +198,7 @@ public class CarmesiInitializer implements ServletContextListener {
         dynamic.addMapping(url.value());
     }
     
-    private void addControllerFilter(Class<Object> klass) throws InstantiationException, IllegalAccessException {
+    private void addControllerFilter(Class<?> klass) throws InstantiationException, IllegalAccessException {
         assert klass != null;
         ControllerFilter filter;
         if (Controller.class.isAssignableFrom(klass)) {
@@ -213,6 +214,7 @@ public class CarmesiInitializer implements ServletContextListener {
         dynamic.addMappingForUrlPatterns(set, false, before.value());
     }
     
+    @SuppressWarnings("unchecked")
     private void configure(SimpleControllerWrapper controller){
         assert controller != null;
         try {
@@ -223,8 +225,8 @@ public class CarmesiInitializer implements ServletContextListener {
             if(JSONSerializer.class.isAssignableFrom(serializerKlass)){
                 controller.setJSONSerializer(serializerKlass.asSubclass(JSONSerializer.class).newInstance());
             }
-            for(Map.Entry<Class, Converter> entry:converterMap.entrySet()){
-                controller.addConverter(entry.getKey(), entry.getValue());
+            for(Map.Entry<Class<?>, Converter<?>> entry:converterMap.entrySet()){
+                controller.addConverter((Class<Object>)entry.getKey(), (Converter<Object>)entry.getValue());
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(CarmesiInitializer.class.getName()).log(Level.SEVERE, null, ex);
@@ -235,7 +237,7 @@ public class CarmesiInitializer implements ServletContextListener {
         }
     }
     
-    private void addConverter(Class<? extends Converter> klass) throws InstantiationException, IllegalAccessException{
+    private void addConverter(Class<? extends Converter<?>> klass) throws InstantiationException, IllegalAccessException{
         assert klass != null;
         Converter converter=klass.newInstance();
         converterMap.put(klass.getAnnotation(ConverterFor.class).value(), converter);

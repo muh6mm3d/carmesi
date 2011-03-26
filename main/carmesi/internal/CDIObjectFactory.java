@@ -18,30 +18,24 @@ import javax.naming.NamingException;
  */
 class CDIObjectFactory implements ObjectFactory{
     private BeanManager beanManager;
-    private CreationalContext creationalContext;
-    private Collection<Object> objects=new LinkedList<Object>();
+    private Collection<ObjectWrapper<?>> objects=new LinkedList<ObjectWrapper<?>>();
 
     public void init() {
         try {
             InitialContext initialContext=new InitialContext();
             beanManager=(BeanManager) initialContext.lookup("java:comp/BeanManager");
-            creationalContext=beanManager.createCreationalContext(null);
         } catch (NamingException ex) {
             ex.printStackTrace();
             throw new AssertionError(ex.toString());
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void dispose() {
-        for(Object o:objects){
-            if(o instanceof InjectionTarget){
-                InjectionTarget target=(InjectionTarget) o;
-                target.preDestroy(o);
-                target.dispose(o);
-            }
-        }
-        if(creationalContext != null){
-            creationalContext.release();
+        for(ObjectWrapper<?> wrapper:objects){
+            ((InjectionTarget<Object>)wrapper.getInjectionTarget()).preDestroy(wrapper.getObject());
+            ((InjectionTarget<Object>)wrapper.getInjectionTarget()).dispose(wrapper.getObject());
+            wrapper.getCreationalContext().release();
         }
     }
 
@@ -62,14 +56,40 @@ class CDIObjectFactory implements ObjectFactory{
         T object;
         AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(klass);
         InjectionTarget<T> target = beanManager.createInjectionTarget(annotatedType);
-        if(creationalContext == null){
-            creationalContext = beanManager.createCreationalContext(null);
-        }
+        CreationalContext<T> creationalContext = beanManager.<T>createCreationalContext(null);
         object = target.produce(creationalContext);
         target.inject(object, creationalContext);
         target.postConstruct(object);
-        objects.add(target);
+        objects.add(new ObjectWrapper<T>(object, target, creationalContext));
         return object;
+    }
+    
+    private class ObjectWrapper<T>{
+        private T object;
+        private InjectionTarget<T> injectionTarget;
+        private CreationalContext<T> creationalContext;
+
+        private ObjectWrapper(T object, InjectionTarget<T> injectionTarget, CreationalContext<T> context) {
+            assert object != null;
+            assert injectionTarget != null;
+            assert context != null;
+            this.object = object;
+            this.injectionTarget = injectionTarget;
+            this.creationalContext=context;
+        }
+
+        private InjectionTarget<T> getInjectionTarget() {
+            return injectionTarget;
+        }
+
+        private T getObject() {
+            return object;
+        }
+
+        public CreationalContext<T> getCreationalContext() {
+            return creationalContext;
+        }
+        
     }
     
 }
