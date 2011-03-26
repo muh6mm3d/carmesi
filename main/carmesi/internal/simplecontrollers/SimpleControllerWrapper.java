@@ -56,7 +56,7 @@ import javax.servlet.http.HttpSession;
 public class SimpleControllerWrapper implements Controller{
     private Object simpleController;
     private Method method;
-    private Map<Class, Converter> converters=new ConcurrentHashMap<Class, Converter>();
+    private Map<Class<?>, Converter<?>> converters=new ConcurrentHashMap<Class<?>, Converter<?>>();
     private boolean autoRequestAttribute=true;
     private int defaultCookieMaxAge=-1;
     private JSONSerializer jsonSerializer;
@@ -99,12 +99,13 @@ public class SimpleControllerWrapper implements Controller{
      * @throws NullPointerException if klass is null
      * @return 
      */
+    @SuppressWarnings("unchecked")
     public <T> Converter<T> getConverter(Class<T> klass) throws NullPointerException {
-        return converters.get(klass);
+        return (Converter<T>) converters.get(klass);
     }
     
-    public Map<Class, Converter> getConverters(){
-        return new HashMap<Class, Converter>(converters);
+    public Map<Class<?>, Converter<?>> getConverters(){
+        return new HashMap<Class<?>, Converter<?>>(converters);
     }
 
     public boolean isAutoRequestAttribute() {
@@ -178,7 +179,7 @@ public class SimpleControllerWrapper implements Controller{
     }
 
     private void checkValidAsignation(TargetInfo parameterInfo, Object attributeValue, String attributeName, String attributeType) throws IllegalArgumentException {
-        Class type = parameterInfo.getType();
+        Class<?> type = parameterInfo.getType();
         if(type.isPrimitive()){
             if(attributeValue == null){
                 String message=formatMessage(messagesBundle.getString("nullPrimitiveAttribute"), attributeType, attributeName, parameterInfo.getType().getName());
@@ -499,6 +500,7 @@ public class SimpleControllerWrapper implements Controller{
         
         private Pattern getterPattern=Pattern.compile("get(.+)");
 
+        @SuppressWarnings("unchecked")
         private void process() throws IOException {
             if(isVoid){
                 return;
@@ -510,7 +512,7 @@ public class SimpleControllerWrapper implements Controller{
                 }else if(method.isAnnotationPresent(ApplicationAttribute.class)){
                     executionContext.getServletContext().setAttribute(method.getAnnotation(ApplicationAttribute.class).value(), value);
                 }else if(method.isAnnotationPresent(CookieValue.class)){
-                    Converter<Object> converter=value != null? getConverter((Class<Object>)value.getClass()): null;
+                    Converter<Object> converter=value != null? (Converter<Object>) getConverter(value.getClass()): null;
                     String stringValue;
                     if(converter != null){
                         try{
