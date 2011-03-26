@@ -177,6 +177,7 @@ public class CarmesiInitializer implements ServletContextListener {
         if (Controller.class.isAssignableFrom(klass)) {
             controller = controllerFactory.createController(klass.asSubclass(Controller.class));
         }else{
+            SimpleControllerWrapper.checkValidSimpleControllerClass(klass);
             SimpleControllerWrapper simpleController=SimpleControllerWrapper.createInstance(controllerFactory.createController(klass));
             configure(simpleController);
             controller=simpleController;
@@ -204,6 +205,7 @@ public class CarmesiInitializer implements ServletContextListener {
         if (Controller.class.isAssignableFrom(klass)) {
             filter=new ControllerFilter(controllerFactory.createController(klass.asSubclass(Controller.class)));
         }else{
+            SimpleControllerWrapper.checkValidSimpleControllerClass(klass);
             SimpleControllerWrapper simpleController = SimpleControllerWrapper.createInstance(controllerFactory.createController(klass));
             configure(simpleController);
             filter=new ControllerFilter(simpleController);

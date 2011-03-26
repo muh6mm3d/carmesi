@@ -74,6 +74,14 @@ public class SimpleControllerWrapper implements Controller{
         method=m;
         addConverter(Date.class, new DateConverter());
     }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public Object getSimpleController() {
+        return simpleController;
+    }
     
     /**
      * 
@@ -440,8 +448,14 @@ public class SimpleControllerWrapper implements Controller{
         if(pojoController == null){
             throw new NullPointerException("controller object is null");
         }
+        checkValidSimpleControllerClass(pojoController.getClass());
+        Method controllerMethod=getPossibleControllerMethods(pojoController.getClass()).get(0);
+        return new SimpleControllerWrapper(pojoController, controllerMethod);
+    }
+    
+    public static List<Method> getPossibleControllerMethods(Class<?> klass){
         List<Method> methods=new LinkedList<Method>();
-        for(Method method:pojoController.getClass().getDeclaredMethods()){
+        for(Method method:klass.getDeclaredMethods()){
             if(Modifier.isPublic(method.getModifiers()) 
                     && !method.isAnnotationPresent(PostConstruct.class) && !method.isAnnotationPresent(PreDestroy.class)
                     && !method.isAnnotationPresent(Resource.class) && !isAnnotationPresent(method, "javax.ejb.EJB") && !isAnnotationPresent(method, "javax.inject.Inject")
@@ -449,10 +463,19 @@ public class SimpleControllerWrapper implements Controller{
                 methods.add(method);
             }
         }
-        if(methods.size() != 1){
+        return methods;
+    }
+    
+    /**
+     * Check if the class is valid to be a POJO controller. If not, throws an IllegalArgumentException.
+     * 
+     * @param klass 
+     * @throws IllegalArgumentException if this is not a valid class for a POJO controller.
+     */
+    public static void checkValidSimpleControllerClass(Class<?> klass) throws IllegalArgumentException {
+        if(getPossibleControllerMethods(klass).size() != 1){
             throw new IllegalArgumentException("Controller must have one and only one public method.");
         }
-        return new SimpleControllerWrapper(pojoController, methods.get(0));
     }
     
     /**
