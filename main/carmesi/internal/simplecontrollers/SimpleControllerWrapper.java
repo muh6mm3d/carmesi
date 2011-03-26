@@ -64,7 +64,7 @@ public class SimpleControllerWrapper implements Controller{
     private static ResourceBundle messagesBundle;
     
     static {
-        messagesBundle=ResourceBundle.getBundle("carmesi.internal.injectionErrorMessages");
+        messagesBundle=ResourceBundle.getBundle("carmesi.internal.simplecontrollers.injectionErrorMessages");
     }
     
     private SimpleControllerWrapper(Object simpleController, Method m){
