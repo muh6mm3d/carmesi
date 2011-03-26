@@ -7,6 +7,8 @@ import com.google.gson.GsonBuilder;
 
 /**
  * Serialize an object to its JSON representation using Gson library. Be sure of adding the Gson library to your project.
+ * <p>
+ * This serializer internally uses GsonBuilder without custom configuration.
  *
  * @author Victor Hugo Herrera Maldonado
  */
